@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      initialRoute: AppRoutes.mainTab,
+      initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
       debugShowCheckedModeBanner: false,
     );
