@@ -31,17 +31,17 @@ class _SplashPageState extends State<SplashPage>
     
     // 初始化动画控制器
     _textController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
     
     _loadingController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
     
     _particleController = AnimationController(
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
     
@@ -92,15 +92,15 @@ class _SplashPageState extends State<SplashPage>
     _particleController.forward();
     
     // 2. 延迟后启动文字动画
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(const Duration(milliseconds: 300));
     _textController.forward();
     
     // 3. 延迟后启动加载动画
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 400));
     _loadingController.repeat();
     
     // 4. 延迟后跳转到主页面
-    await Future.delayed(const Duration(milliseconds: 2500));
+    await Future.delayed(const Duration(milliseconds: 800));
     _navigateToMain();
   }
 
