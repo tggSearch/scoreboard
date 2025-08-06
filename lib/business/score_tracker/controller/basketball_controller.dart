@@ -18,8 +18,8 @@ class BasketballController extends BaseController {
   Timer? _timer;
 
   // Team information
-  final _team1Name = 'home_team'.tr.obs;
-  final _team2Name = 'away_team'.tr.obs;
+  final _team1Name = 'home_team'.obs;
+  final _team2Name = 'away_team'.obs;
   final _team1Score = 0.obs;
   final _team2Score = 0.obs;
 

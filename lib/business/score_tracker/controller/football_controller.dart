@@ -220,38 +220,60 @@ class FootballController extends BaseController {
 
   // 横屏模式相关方法
   void toggleLandscapeMode() {
-    _isLandscapeMode.value = !_isLandscapeMode.value;
-    if (_isLandscapeMode.value) {
-      // 1. 横屏处理
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-      
-      // 2. 隐藏系统UI
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      
-      // 3. 隐藏导航栏
+    if (!_isLandscapeMode.value) {
+      // 进入横屏模式：先隐藏AppBar，再切换方向
       _isAppBarVisible.value = false;
       
-      // 4. 横屏模式下自动启用屏幕长亮
-      _isScreenWakeLockEnabled.value = true;
-      _enableWakeLock();
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _isLandscapeMode.value = true;
+        // 使用try-catch避免方向切换错误
+        try {
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.landscapeLeft,
+            DeviceOrientation.landscapeRight,
+          ]);
+        } catch (e) {
+          // 如果方向切换失败，至少更新UI状态
+          print('orientation_switch_failed'.tr + ': $e');
+        }
+        
+        // 自动启用屏幕长亮
+        _isScreenWakeLockEnabled.value = true;
+        _enableWakeLock();
+      });
     } else {
-      // 退出横屏模式
-      // 恢复设备方向为竖屏
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
+      // 退出横屏模式：先切换方向，再显示AppBar
+      _isLandscapeMode.value = false;
       
-      // 恢复系统UI
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      // 使用try-catch避免方向切换错误
+      try {
+        // 先设置所有方向，然后限制为竖屏
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
+        
+        // 延迟后限制为竖屏
+        Future.delayed(const Duration(milliseconds: 200), () {
+          try {
+            SystemChrome.setPreferredOrientations([
+              DeviceOrientation.portraitUp,
+              DeviceOrientation.portraitDown,
+            ]);
+          } catch (e) {
+            print('portrait_orientation_switch_failed'.tr + ': $e');
+          }
+        });
+      } catch (e) {
+        print('方向切换失败: $e');
+      }
       
-      // 显示导航栏
+      // 显示AppBar
       _isAppBarVisible.value = true;
       
-      // 退出横屏模式时自动禁用屏幕长亮
+      // 禁用屏幕长亮
       _isScreenWakeLockEnabled.value = false;
       _disableWakeLock();
     }

@@ -33,8 +33,8 @@ class RacketSportController extends BaseController {
   final List<int> scoreSystems = [3, 5, 11, 21];
   
   // 队伍信息
-  final RxString team1Name = 'Team A'.obs;
-  final RxString team2Name = 'Team B'.obs;
+  final RxString team1Name = 'home_team'.obs;
+  final RxString team2Name = 'away_team'.obs;
   
   // 比分
   final RxInt team1Score = 0.obs;
@@ -113,8 +113,8 @@ class RacketSportController extends BaseController {
       final prefs = await SharedPreferences.getInstance();
       
       // 加载队伍名称
-      team1Name.value = prefs.getString('${_storagePrefix}team1_name') ?? 'Team A';
-      team2Name.value = prefs.getString('${_storagePrefix}team2_name') ?? 'Team B';
+          team1Name.value = prefs.getString('${_storagePrefix}team1_name') ?? 'home_team'.tr;
+    team2Name.value = prefs.getString('${_storagePrefix}team2_name') ?? 'away_team'.tr;
       
       // 加载分数
       team1Score.value = prefs.getInt('${_storagePrefix}team1_score') ?? 0;

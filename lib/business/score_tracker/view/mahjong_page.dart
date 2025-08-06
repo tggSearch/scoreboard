@@ -753,12 +753,12 @@ class MahjongPage extends BaseView<MahjongController> {
           if (newFans != null && newFans > 0) {
             controller.updateSelectedFans(newFans);
             // 根据胡牌方式保存到对应的配置
-            if (winMethod == 'self_draw'.tr) {
+            if (winMethod == 'self_draw') {
               await controller.updateFansForWinTypeSelfDraw(
                 controller.selectedWinType.value,
                 newFans,
               );
-            } else if (winMethod == 'point_pao'.tr) {
+            } else if (winMethod == 'point_pao') {
               await controller.updateFansForWinTypePointPao(
                 controller.selectedWinType.value,
                 newFans,
@@ -766,7 +766,7 @@ class MahjongPage extends BaseView<MahjongController> {
             }
             Get.snackbar(
               'fans_config_save_success'.tr,
-              '${controller.selectedWinType.value}的${winMethod}番数已更新',
+              '${controller.selectedWinType.value.tr}的${winMethod.tr}番数已更新',
               snackPosition: SnackPosition.TOP,
               backgroundColor: const Color(0xFF4CAF50),
               colorText: Colors.white,
@@ -875,16 +875,16 @@ class MahjongPage extends BaseView<MahjongController> {
                 Expanded(
                   child: Obx(() => ElevatedButton(
                     onPressed: () async {
-                      winMethod.value = 'self_draw'.tr;
+                      winMethod.value = 'self_draw';
                       // 更新为自摸番数
                       final fans = await controller.getFansForWinTypeSelfDraw(controller.selectedWinType.value);
                       controller.selectedFans.value = fans;
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: winMethod.value == 'self_draw'.tr 
+                      backgroundColor: winMethod.value == 'self_draw' 
                         ? const Color(0xFF4CAF50) 
                         : Colors.grey.shade300,
-                      foregroundColor: winMethod.value == 'self_draw'.tr 
+                      foregroundColor: winMethod.value == 'self_draw' 
                         ? Colors.white 
                         : Colors.black87,
                     ),
@@ -895,16 +895,16 @@ class MahjongPage extends BaseView<MahjongController> {
                 Expanded(
                   child: Obx(() => ElevatedButton(
                     onPressed: () async {
-                      winMethod.value = 'point_pao'.tr;
+                      winMethod.value = 'point_pao';
                       // 更新为点炮番数
                       final fans = await controller.getFansForWinTypePointPao(controller.selectedWinType.value);
                       controller.selectedFans.value = fans;
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: winMethod.value == 'point_pao'.tr 
+                      backgroundColor: winMethod.value == 'point_pao' 
                         ? const Color(0xFF4CAF50) 
                         : Colors.grey.shade300,
-                      foregroundColor: winMethod.value == 'point_pao'.tr 
+                      foregroundColor: winMethod.value == 'point_pao' 
                         ? Colors.white 
                         : Colors.black87,
                     ),
@@ -918,7 +918,7 @@ class MahjongPage extends BaseView<MahjongController> {
             
             // 第二步：点炮时选择被点炮者
             Obx(() {
-              if (winMethod.value != 'point_pao'.tr) return const SizedBox.shrink();
+              if (winMethod.value != 'point_pao') return const SizedBox.shrink();
               
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -965,7 +965,7 @@ class MahjongPage extends BaseView<MahjongController> {
             // 第三步：选择胡牌类型和番数
             Obx(() {
               if (winMethod.value.isEmpty || 
-                  (winMethod.value == 'point_pao'.tr && selectedLoser.value == -1)) {
+                  (winMethod.value == 'point_pao' && selectedLoser.value == -1)) {
                 return const SizedBox.shrink();
               }
               
@@ -984,16 +984,16 @@ class MahjongPage extends BaseView<MahjongController> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     items: controller.winTypes.map((type) {
-                      return DropdownMenuItem(value: type, child: Text(type));
+                      return DropdownMenuItem(value: type, child: Text(type.tr));
                     }).toList(),
                     onChanged: (value) async {
                       if (value != null) {
                         controller.selectedWinType.value = value;
                         // 根据当前胡牌方式更新番数
-                        if (winMethod.value == 'self_draw'.tr) {
+                        if (winMethod.value == 'self_draw') {
                           final fans = await controller.getFansForWinTypeSelfDraw(value);
                           controller.selectedFans.value = fans;
-                        } else if (winMethod.value == 'point_pao'.tr) {
+                        } else if (winMethod.value == 'point_pao') {
                           final fans = await controller.getFansForWinTypePointPao(value);
                           controller.selectedFans.value = fans;
                         }
@@ -1079,10 +1079,10 @@ class MahjongPage extends BaseView<MahjongController> {
           ),
           Obx(() => ElevatedButton(
             onPressed: (winMethod.value.isNotEmpty && 
-                       (winMethod.value != 'point_pao'.tr || selectedLoser.value != -1))
+                       (winMethod.value != 'point_pao' || selectedLoser.value != -1))
                 ? () {
                     // 执行胡牌操作
-                    if (winMethod.value == 'self_draw'.tr) {
+                    if (winMethod.value == 'self_draw') {
                       // 自摸：使用当前点击的玩家
                       _confirmSelfDraw(controller.selectedPlayer.value, zhuamaFans.value);
                     } else {
@@ -1124,7 +1124,7 @@ class MahjongPage extends BaseView<MahjongController> {
       playerIndex: winnerIndex,
       playerName: controller.playerNames[winnerIndex],
       score: totalScore * 3,
-      description: 'self_draw_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value).replaceAll('{fans}', fans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
+              description: 'self_draw_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{fans}', fans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
       timestamp: DateTime.now(),
       scoresAtTime: oldScores,
       scoreChanges: {
@@ -1141,7 +1141,7 @@ class MahjongPage extends BaseView<MahjongController> {
           playerIndex: i,
           playerName: controller.playerNames[i],
           score: -totalScore,
-          description: 'be_self_draw_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value).replaceAll('{total_fans}', (fans + zhuamaFans).toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
+          description: 'be_self_draw_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{total_fans}', (fans + zhuamaFans).toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
           timestamp: DateTime.now(),
           scoresAtTime: oldScores,
           scoreChanges: {
@@ -1184,7 +1184,7 @@ class MahjongPage extends BaseView<MahjongController> {
       playerIndex: winnerIndex,
       playerName: controller.playerNames[winnerIndex],
       score: totalScore,
-      description: 'point_pao_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value).replaceAll('{fans}', fans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
+              description: 'point_pao_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{fans}', fans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
       timestamp: DateTime.now(),
       scoresAtTime: oldScores,
       scoreChanges: {
@@ -1199,7 +1199,7 @@ class MahjongPage extends BaseView<MahjongController> {
       playerIndex: loserIndex,
       playerName: controller.playerNames[loserIndex],
       score: -totalScore,
-      description: 'be_point_pao_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value).replaceAll('{total_fans}', (fans + zhuamaFans).toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
+        description: 'be_point_pao_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{total_fans}', (fans + zhuamaFans).toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
       timestamp: DateTime.now(),
       scoresAtTime: oldScores,
       scoreChanges: {
@@ -1243,14 +1243,14 @@ class MahjongPage extends BaseView<MahjongController> {
                 Expanded(
                   child: Obx(() => ElevatedButton(
                     onPressed: () {
-                      gangMethod.value = 'ming_gang'.tr;
+                      gangMethod.value = 'ming_gang';
                       gangScore.value = 1; // 明杠1倍
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: gangMethod.value == 'ming_gang'.tr 
+                      backgroundColor: gangMethod.value == 'ming_gang' 
                         ? const Color(0xFF4CAF50) 
                         : Colors.grey.shade300,
-                      foregroundColor: gangMethod.value == 'ming_gang'.tr 
+                      foregroundColor: gangMethod.value == 'ming_gang' 
                         ? Colors.white 
                         : Colors.black87,
                     ),
@@ -1261,14 +1261,14 @@ class MahjongPage extends BaseView<MahjongController> {
                 Expanded(
                   child: Obx(() => ElevatedButton(
                     onPressed: () {
-                      gangMethod.value = 'an_gang'.tr;
+                      gangMethod.value = 'an_gang';
                       gangScore.value = 2; // 暗杠2倍
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: gangMethod.value == 'an_gang'.tr 
+                      backgroundColor: gangMethod.value == 'an_gang' 
                         ? const Color(0xFF4CAF50) 
                         : Colors.grey.shade300,
-                      foregroundColor: gangMethod.value == 'an_gang'.tr 
+                      foregroundColor: gangMethod.value == 'an_gang' 
                         ? Colors.white 
                         : Colors.black87,
                     ),
@@ -1279,14 +1279,14 @@ class MahjongPage extends BaseView<MahjongController> {
                 Expanded(
                   child: Obx(() => ElevatedButton(
                     onPressed: () {
-                      gangMethod.value = 'dian_gang'.tr;
+                      gangMethod.value = 'dian_gang';
                       gangScore.value = 2; // 点杠2倍
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: gangMethod.value == 'dian_gang'.tr 
+                      backgroundColor: gangMethod.value == 'dian_gang' 
                         ? const Color(0xFF4CAF50) 
                         : Colors.grey.shade300,
-                      foregroundColor: gangMethod.value == 'dian_gang'.tr 
+                      foregroundColor: gangMethod.value == 'dian_gang' 
                         ? Colors.white 
                         : Colors.black87,
                     ),
@@ -1300,7 +1300,7 @@ class MahjongPage extends BaseView<MahjongController> {
             
             // 第二步：点杠时选择被杠者
             Obx(() {
-              if (gangMethod.value != 'dian_gang'.tr) return const SizedBox.shrink();
+              if (gangMethod.value != 'dian_gang') return const SizedBox.shrink();
               
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1387,10 +1387,10 @@ class MahjongPage extends BaseView<MahjongController> {
           ),
           Obx(() => ElevatedButton(
             onPressed: (gangMethod.value.isNotEmpty && 
-                       (gangMethod.value != 'dian_gang'.tr || selectedLoser.value != -1))
+                       (gangMethod.value != 'dian_gang' || selectedLoser.value != -1))
                 ? () {
                     // 执行杠牌操作
-                    if (gangMethod.value == 'ming_gang'.tr || gangMethod.value == 'an_gang'.tr) {
+                    if (gangMethod.value == 'ming_gang' || gangMethod.value == 'an_gang') {
                       _confirmGang(controller.selectedPlayer.value, gangMethod.value, gangScore.value);
                     } else {
                       _confirmGangPoint(controller.selectedPlayer.value, selectedLoser.value, gangMethod.value, gangScore.value);
@@ -1579,12 +1579,12 @@ class MahjongPage extends BaseView<MahjongController> {
   void _showCustomFansDialog(String winMethod) {
     Get.dialog(
       CustomDialog(
-        title: 'custom_fans_title'.tr.replaceAll('{win_type}', controller.selectedWinType.value),
+        title: 'custom_fans_title'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('current_win_type'.tr.replaceAll('{win_type}', controller.selectedWinType.value)),
+            Text('current_win_type'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr)),
             const SizedBox(height: 4),
             Text('win_method'.tr.replaceAll('{method}', winMethod), style: TextStyle(fontSize: 12, color: Colors.grey[600])),
             const SizedBox(height: 16),
@@ -1626,12 +1626,12 @@ class MahjongPage extends BaseView<MahjongController> {
           ElevatedButton(
             onPressed: () async {
               // 根据胡牌方式保存到对应的配置
-              if (winMethod == 'self_draw'.tr) {
+              if (winMethod == 'self_draw') {
                 await controller.updateFansForWinTypeSelfDraw(
                   controller.selectedWinType.value,
                   controller.selectedFans.value,
                 );
-              } else if (winMethod == 'point_pao'.tr) {
+              } else if (winMethod == 'point_pao') {
                 await controller.updateFansForWinTypePointPao(
                   controller.selectedWinType.value,
                   controller.selectedFans.value,
@@ -1658,7 +1658,7 @@ class MahjongPage extends BaseView<MahjongController> {
   void _showPresetFansDialog() {
     Get.dialog(
       AlertDialog(
-        title: Text('preset_fans_title'.tr.replaceAll('{win_type}', controller.selectedWinType.value)),
+        title: Text('preset_fans_title'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr)),
         content: SizedBox(
           width: double.maxFinite,
           height: 300,
@@ -1678,7 +1678,7 @@ class MahjongPage extends BaseView<MahjongController> {
                   Get.back();
                   Get.snackbar(
                     'fans_set_success'.tr,
-                    'fans_set_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value).replaceAll('{fans}', fans.toString()),
+                    'fans_set_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{fans}', fans.toString()),
                     snackPosition: SnackPosition.TOP,
                     backgroundColor: const Color(0xFF4CAF50),
                     colorText: Colors.white,

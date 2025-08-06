@@ -25,8 +25,8 @@ class TennisRecord {
 
 class TennisController extends BaseController {
   // 队伍信息
-  final RxString team1Name = 'Team A'.obs;
-  final RxString team2Name = 'Team B'.obs;
+  final RxString team1Name = 'home_team'.obs;
+  final RxString team2Name = 'away_team'.obs;
   
   // 比赛结构：Match -> Set -> Game -> Point
   // 当前分数（Point级别）
@@ -277,8 +277,8 @@ class TennisController extends BaseController {
       isLandscapeMode.value = false;
       isAppBarVisible.value = true;
       
-      team1Name.value = prefs.getString('tennis_team1_name') ?? 'Team A';
-      team2Name.value = prefs.getString('tennis_team2_name') ?? 'Team B';
+          team1Name.value = prefs.getString('tennis_team1_name') ?? 'home_team'.tr;
+    team2Name.value = prefs.getString('tennis_team2_name') ?? 'away_team'.tr;
       team1Points.value = prefs.getInt('tennis_team1_points') ?? 0;
       team2Points.value = prefs.getInt('tennis_team2_points') ?? 0;
       team1Games.value = prefs.getInt('tennis_team1_games') ?? 0;

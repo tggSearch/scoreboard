@@ -133,7 +133,7 @@ class AppRoutes {
         ),
         GetPage(
           name: football,
-          page: () => const FootballPage(),
+          page: () => FootballPage(),
           binding: FootballBinding(),
         ),
         GetPage(

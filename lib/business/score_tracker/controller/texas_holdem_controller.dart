@@ -80,7 +80,7 @@ class TexasHoldemController extends BaseController {
       
       // 如果还是没有玩家，使用默认玩家
       if (playersList.isEmpty) {
-        playersList.addAll(['玩家1', '玩家2', '玩家3', '玩家4']);
+        playersList.addAll(['player_1'.tr, 'player_2'.tr, 'player_3'.tr, 'player_4'.tr]);
       }
       
       players.value = playersList;
@@ -253,7 +253,7 @@ class TexasHoldemController extends BaseController {
         // 语音播报
         if (voiceAnnouncer.isEnabled.value) {
           final action = adjustment > 0 ? '获得' : '失去';
-          voiceAnnouncer.announce('$player$action${adjustment.abs()}次');
+          voiceAnnouncer.announce('texas_holdem_score_adjustment'.tr.replaceAll('{player}', player).replaceAll('{action}', action).replaceAll('{adjustment}', adjustment.abs().toString()));
         }
       } else {
         // 如果尝试减到0或负数，显示提示
@@ -316,7 +316,7 @@ class TexasHoldemController extends BaseController {
     
     // 语音播报
     if (voiceAnnouncer.isEnabled.value) {
-      voiceAnnouncer.announce('比赛结果已保存');
+      voiceAnnouncer.announce('texas_holdem_result_saved'.tr);
     }
   }
   

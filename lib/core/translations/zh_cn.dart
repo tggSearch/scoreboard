@@ -71,6 +71,8 @@ class ZhCN {
     'gang_point_announce': '{player}杠牌，{loser}被杠，{score}分',
     'manual_score_announce': '{player}手动{operation}{score}分',
     'game_reset_announce': '游戏重置，所有分数清零',
+    'landlord_wins_announce': '地主{landlord}获胜，获得{score}分',
+    'farmers_win_announce': '农民获胜，地主{landlord}失去{score}分',
     'current_ranking': '当前排名：',
     'ranking_summary': '{rank}.{player}{score_text}',
     'positive_score': '+{score}',
@@ -584,6 +586,20 @@ class ZhCN {
     'tennis_history': '网球历史',
     'total_score': '总比分',
     'current_game': '当前局',
+    'points_current_score': '分，当前比分',
+    'vs': '比',
+    'score_reset_to_zero': '比分重置为0比0',
+
+    // Bridge
+    'bridge_scoring': '桥牌计分',
+    'bridge_history': '桥牌历史',
+    'game_has_been_reset': '游戏已重置',
+    'contract_completed': '{declarer}完成{contract}，得分{score}分',
+    'contract_failed': '{declarer}未能完成{contract}，失分{score}分',
+
+    // Texas Holdem
+    'texas_holdem_score_adjustment': '{player}{action}{adjustment}次',
+    'texas_holdem_result_saved': '比赛结果已保存',
 
     // History Records
   };

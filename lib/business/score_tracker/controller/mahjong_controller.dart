@@ -34,7 +34,7 @@ class MahjongController extends BaseController {
   final VoiceAnnouncer voiceAnnouncer = VoiceAnnouncer();
   
   // 当前选择的胡牌类型和番数
-  final RxString selectedWinType = '平胡'.obs;
+  final RxString selectedWinType = 'ping_hu'.obs;
   final RxInt selectedFans = 1.obs;
   final RxInt selectedZhuama = 0.obs;
   
@@ -328,9 +328,9 @@ class MahjongController extends BaseController {
     
     // 语音播报
     if (landlordWins) {
-      voiceAnnouncer.announce('地主 $landlordName 获胜，获得 $landlordScore 分');
+      voiceAnnouncer.announce('landlord_wins_announce'.tr.replaceAll('{landlord}', landlordName).replaceAll('{score}', landlordScore.toString()));
     } else {
-      voiceAnnouncer.announce('农民获胜，地主 $landlordName 失去 $landlordScore 分');
+      voiceAnnouncer.announce('farmers_win_announce'.tr.replaceAll('{landlord}', landlordName).replaceAll('{score}', landlordScore.toString()));
     }
   }
 
@@ -466,7 +466,7 @@ class MahjongController extends BaseController {
       await _saveAllScores();
       
       // 语音播报
-      voiceAnnouncer.announceGang(playerNames[playerIndex], '点杠', fans);
+      voiceAnnouncer.announceGang(playerNames[playerIndex], 'dian_gang'.tr, fans);
       
       // 计分完成播报
       _announceScoreSummary();
@@ -500,8 +500,8 @@ class MahjongController extends BaseController {
     for (int i = 0; i < playerNames.length; i++) {
       final playerRecords = records.where((r) => r.playerIndex == i).toList();
       final totalScore = playerRecords.fold(0, (sum, r) => sum + r.score);
-      final winCount = playerRecords.where((r) => r.description.contains('胡牌')).length;
-      final gangCount = playerRecords.where((r) => r.description.contains('杠')).length;
+      final winCount = playerRecords.where((r) => r.description.contains('win'.tr) || r.description.contains('self_draw'.tr) || r.description.contains('point_pao'.tr)).length;
+      final gangCount = playerRecords.where((r) => r.description.contains('gang'.tr)).length;
       
       stats[playerNames[i]] = {
         'totalScore': totalScore,
@@ -518,10 +518,10 @@ class MahjongController extends BaseController {
   String getGameSummary() {
     final stats = getStatistics();
     final totalRecords = records.length;
-    final totalWins = records.where((r) => r.description.contains('胡牌')).length;
-    final totalGangs = records.where((r) => r.description.contains('杠')).length;
+    final totalWins = records.where((r) => r.description.contains('win'.tr) || r.description.contains('self_draw'.tr) || r.description.contains('point_pao'.tr)).length;
+    final totalGangs = records.where((r) => r.description.contains('gang'.tr)).length;
     
-    return '总记录: $totalRecords条 | 胡牌: $totalWins次 | 杠牌: $totalGangs次';
+    return '${'history_records'.tr}: $totalRecords${'record_number'.tr.replaceAll('{number}', '')} | ${'win_game'.tr}: $totalWins${'times'.tr} | ${'gang'.tr}: $totalGangs${'times'.tr}';
   }
 
   // 获取玩家排名
@@ -577,9 +577,9 @@ class MahjongController extends BaseController {
       
       // 语音播报
       if (scoreChange > 0) {
-        voiceAnnouncer.announce('manual_score_announce'.tr.replaceAll('{player}', playerNames[playerIndex]).replaceAll('{operation}', '加分').replaceAll('{score}', scoreChange.toString()));
+        voiceAnnouncer.announce('manual_score_announce'.tr.replaceAll('{player}', playerNames[playerIndex]).replaceAll('{operation}', 'manual_add_score_description'.tr).replaceAll('{score}', scoreChange.toString()));
       } else if (scoreChange < 0) {
-        voiceAnnouncer.announce('manual_score_announce'.tr.replaceAll('{player}', playerNames[playerIndex]).replaceAll('{operation}', '扣分').replaceAll('{score}', (-scoreChange).toString()));
+        voiceAnnouncer.announce('manual_score_announce'.tr.replaceAll('{player}', playerNames[playerIndex]).replaceAll('{operation}', 'manual_subtract_score_description'.tr).replaceAll('{score}', (-scoreChange).toString()));
       }
       
       // 计分完成播报

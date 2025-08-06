@@ -85,7 +85,7 @@ class BridgeController extends BaseController {
   // Current round settings
   final RxString currentContract = ''.obs;
   final RxString currentDoubleStatus = 'no_double'.tr.obs;
-  final RxString currentDeclarer = 'NS'.obs;
+  final RxString currentDeclarer = 'north_south'.obs;
   final RxInt currentTricks = 6.obs;
   final RxBool currentVulnerable = false.obs;
   
@@ -112,10 +112,10 @@ class BridgeController extends BaseController {
   void _initializePlayers() {
     if (players.isEmpty) {
       players.addAll([
-        BridgePlayer(name: 'Player 1', position: 'NS'),
-        BridgePlayer(name: 'Player 2', position: 'NS'),
-        BridgePlayer(name: 'Player 3', position: 'EW'),
-        BridgePlayer(name: 'Player 4', position: 'EW'),
+              BridgePlayer(name: 'player_1'.tr, position: 'north_south'),
+      BridgePlayer(name: 'player_2'.tr, position: 'north_south'),
+      BridgePlayer(name: 'player_3'.tr, position: 'east_west'),
+      BridgePlayer(name: 'player_4'.tr, position: 'east_west'),
       ]);
     }
   }
@@ -174,7 +174,7 @@ class BridgeController extends BaseController {
   // 计算桥牌得分
   Map<String, int> _calculateBridgeScore() {
     if (currentContract.value.isEmpty) {
-      return {'ns': 0, 'ew': 0};
+      return {'north_south': 0, 'east_west': 0};
     }
 
     // 解析定约
@@ -260,14 +260,14 @@ class BridgeController extends BaseController {
       }
       
       return {
-        'ns': currentDeclarer.value == 'NS' ? -penalty : penalty,
-        'ew': currentDeclarer.value == 'EW' ? -penalty : penalty,
+              'north_south': currentDeclarer.value == 'north_south' ? -penalty : penalty,
+      'east_west': currentDeclarer.value == 'east_west' ? -penalty : penalty,
       };
     }
     
     return {
-      'ns': currentDeclarer.value == 'NS' ? totalScore : -totalScore,
-      'ew': currentDeclarer.value == 'EW' ? totalScore : -totalScore,
+      'north_south': currentDeclarer.value == 'north_south' ? totalScore : -totalScore,
+      'east_west': currentDeclarer.value == 'east_west' ? totalScore : -totalScore,
     };
   }
 
@@ -287,8 +287,8 @@ class BridgeController extends BaseController {
       declarer: currentDeclarer.value,
       tricks: currentTricks.value,
       vulnerable: currentVulnerable.value,
-      nsScore: scores['ns']!,
-      ewScore: scores['ew']!,
+      nsScore: scores['north_south']!,
+      ewScore: scores['east_west']!,
       timestamp: DateTime.now(),
     );
     records.add(record);
@@ -297,7 +297,7 @@ class BridgeController extends BaseController {
     _addRecord(record);
 
     // Voice announcement
-    final declarerName = currentDeclarer.value == 'NS' ? 'north_south'.tr : 'east_west'.tr;
+    final declarerName = currentDeclarer.value == 'north_south' ? 'north_south'.tr : 'east_west'.tr;
     final score = scores[currentDeclarer.value.toLowerCase()]!;
     if (score > 0) {
       voiceAnnouncer.announce('contract_completed'.tr.replaceAll('{declarer}', declarerName).replaceAll('{contract}', currentContract.value).replaceAll('{score}', score.toString()));
@@ -308,7 +308,7 @@ class BridgeController extends BaseController {
     // Reset current round data
     currentContract.value = '';
     currentDoubleStatus.value = 'no_double'.tr;
-    currentDeclarer.value = 'NS';
+    currentDeclarer.value = 'north_south';
     currentTricks.value = 6;
     // 自动切换是否有局
     currentVulnerable.value = !currentVulnerable.value;
@@ -321,7 +321,7 @@ class BridgeController extends BaseController {
     records.clear();
     currentContract.value = '';
     currentDoubleStatus.value = 'no_double'.tr;
-    currentDeclarer.value = 'NS';
+    currentDeclarer.value = 'north_south';
     currentTricks.value = 6;
     currentVulnerable.value = false;
     _saveGameData();
@@ -349,9 +349,9 @@ class BridgeController extends BaseController {
       
       // 根据玩家位置计算总分
       for (final record in records) {
-        if (player.position == 'NS') {
+        if (player.position == 'north_south') {
           totalScore += record.nsScore;
-        } else if (player.position == 'EW') {
+        } else if (player.position == 'east_west') {
           totalScore += record.ewScore;
         }
       }

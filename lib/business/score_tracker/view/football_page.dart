@@ -995,11 +995,11 @@ class FootballPage extends BaseView<FootballController> {
                       )),
                       const SizedBox(width: 8),
                       // 时间显示（可点击切换显示模式）
-                      GestureDetector(
-                        onTap: () {
-                          controller.toggleTimeDisplayMode();
-                        },
-                        child: Obx(() => Flexible(
+                      Obx(() => Flexible(
+                        child: GestureDetector(
+                          onTap: () {
+                            controller.toggleTimeDisplayMode();
+                          },
                           child: Text(
                             controller.formattedTimeInSeconds,
                             style: const TextStyle(
@@ -1009,8 +1009,8 @@ class FootballPage extends BaseView<FootballController> {
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
-                        )),
-                      ),
+                        ),
+                      )),
                       const SizedBox(width: 8),
                       // 重置按钮
                       IconButton(
@@ -1046,35 +1046,35 @@ class FootballPage extends BaseView<FootballController> {
           // 队伍名称
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               color: isTeam1 ? Colors.blue[900] : Colors.red[900],
             ),
             child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  teamName,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
+              child: Text(
+                teamName,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
           // 分数显示
           Expanded(
-            child: Center(
-              child: Text(
-                teamScore.toString(),
-                style: const TextStyle(
-                  fontSize: 120,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            child: GestureDetector(
+              onTap: () {
+                controller.toggleAppBarVisibility();
+              },
+              child: Center(
+                child: Text(
+                  teamScore.toString(),
+                  style: const TextStyle(
+                    fontSize: 80,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -1082,26 +1082,25 @@ class FootballPage extends BaseView<FootballController> {
           // 进球按钮
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: Center(
               child: ElevatedButton.icon(
                 onPressed: () {
                   controller.addScore(teamNumber, 1);
                 },
                 icon: const Icon(Icons.sports_soccer, color: Colors.white),
-                                                  label: Text(
-                    'team_goal'.tr.replaceAll('{team}', teamName),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                label: Text(
+                  'team_goal'.tr.replaceAll('{team}', teamName),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isTeam1 ? Colors.blue[700] : Colors.red[700],
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
