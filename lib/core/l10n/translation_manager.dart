@@ -14,7 +14,7 @@ class TranslationManager {
       final languageCode = '${locale.languageCode}_${locale.countryCode}';
       return _getTranslationsByLanguage(languageCode);
     }
-    return ZhCN.translations;
+    return EnUS.translations;
   }
 
   static Map<String, String> _getTranslationsByLanguage(String languageCode) {
@@ -24,7 +24,7 @@ class TranslationManager {
       case 'en_US':
         return EnUS.translations;
       default:
-        return ZhCN.translations;
+        return EnUS.translations;
     }
   }
 

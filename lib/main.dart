@@ -47,8 +47,8 @@ class MyApp extends StatelessWidget {
       ),
       // 多语言支持
       translations: AppTranslations(),
-      locale: const Locale('zh', 'CN'),
-      fallbackLocale: const Locale('zh', 'CN'),
+      locale: const Locale('en', 'US'),
+      fallbackLocale: const Locale('en', 'US'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

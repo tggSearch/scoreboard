@@ -10,7 +10,7 @@ class AppLocalizations {
     enUS,
   ];
   
-  static const String fallbackLocale = 'zh_CN';
+  static const String fallbackLocale = 'en_US';
   
   // 语言映射
   static const Map<String, String> languageNames = {

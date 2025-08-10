@@ -6,7 +6,7 @@ import '../l10n/translation_manager.dart';
 
 class LanguageController extends GetxController {
   static LanguageController get to => Get.find();
-  final RxString currentLanguage = 'zh_CN'.obs;
+  final RxString currentLanguage = 'en_US'.obs;
   final List<String> supportedLanguages = ['zh_CN', 'en_US'];
 
   @override
@@ -18,7 +18,7 @@ class LanguageController extends GetxController {
   Future<void> _loadLanguage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final savedLanguage = prefs.getString('language') ?? 'zh_CN';
+      final savedLanguage = prefs.getString('language') ?? 'en_US';
       currentLanguage.value = savedLanguage;
       
       // 设置语言
@@ -31,9 +31,9 @@ class LanguageController extends GetxController {
       print('Language loaded: $savedLanguage');
     } catch (e) {
       print('Error loading language: $e');
-      // 如果出错，使用默认中文
-      currentLanguage.value = 'zh_CN';
-      Get.updateLocale(const Locale('zh', 'CN'));
+      // 如果出错，使用默认英文
+      currentLanguage.value = 'en_US';
+      Get.updateLocale(const Locale('en', 'US'));
     }
   }
 
