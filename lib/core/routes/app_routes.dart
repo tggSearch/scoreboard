@@ -39,6 +39,7 @@ import '../../business/score_tracker/view/custom_score_history_page.dart';
 import '../../pages/language_settings_page.dart';
 import '../../pages/test_language_page.dart';
 import '../../pages/translation_debug_page.dart';
+import '../../pages/language_test_page.dart';
 import '../../pages/splash_page.dart';
 
 class AppRoutes {
@@ -87,6 +88,7 @@ class AppRoutes {
   static const String languageSettings = '/language-settings';
   static const String testLanguage = '/test-language';
   static const String translationDebug = '/translation-debug';
+  static const String languageTest = '/language-test';
 
   /// Get all routes
   static List<GetPage> get routes => [
@@ -287,6 +289,12 @@ class AppRoutes {
         GetPage(
           name: translationDebug,
           page: () => const TranslationDebugPage(),
+        ),
+        
+        // Language test route
+        GetPage(
+          name: languageTest,
+          page: () => const LanguageTestPage(),
         ),
       ];
 }

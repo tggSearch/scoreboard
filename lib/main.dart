@@ -25,7 +25,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    final languageController = Get.find<LanguageController>();
+    
+    return Obx(() => GetMaterialApp(
       title: 'Score Board',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -47,7 +49,7 @@ class MyApp extends StatelessWidget {
       ),
       // 多语言支持
       translations: AppTranslations(),
-      locale: const Locale('en', 'US'),
+      locale: _getLocaleFromLanguageCode(languageController.currentLanguage.value),
       fallbackLocale: const Locale('en', 'US'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
@@ -58,6 +60,14 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
       debugShowCheckedModeBanner: false,
-    );
+    ));
+  }
+  
+  Locale _getLocaleFromLanguageCode(String languageCode) {
+    final parts = languageCode.split('_');
+    if (parts.length == 2) {
+      return Locale(parts[0], parts[1]);
+    }
+    return const Locale('en', 'US');
   }
 }

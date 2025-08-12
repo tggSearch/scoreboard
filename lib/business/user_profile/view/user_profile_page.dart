@@ -156,6 +156,13 @@ class UserProfilePage extends BaseView<UserProfileController> {
           ),
           _buildDivider(),
           _buildFunctionItem(
+            icon: Icons.bug_report,
+            title: 'Language Test',
+            subtitle: 'Test language switching functionality',
+            onTap: () => Get.toNamed('/language-test'),
+          ),
+          _buildDivider(),
+          _buildFunctionItem(
             icon: Icons.star,
             title: 'rate_app'.tr,
             subtitle: 'rate_app_subtitle'.tr,
