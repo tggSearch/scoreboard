@@ -39,9 +39,12 @@ import '../../business/score_tracker/view/custom_score_history_page.dart';
 import '../../pages/language_settings_page.dart';
 import '../../pages/test_language_page.dart';
 import '../../pages/translation_debug_page.dart';
+import '../../pages/language_test_page.dart';
+import '../../pages/splash_page.dart';
 
 class AppRoutes {
   // Main routes
+  static const String splash = '/splash';
   static const String mainTab = '/main-tab';
   static const String scoreTracker = '/score-tracker';
   static const String basketball = '/basketball';
@@ -85,9 +88,16 @@ class AppRoutes {
   static const String languageSettings = '/language-settings';
   static const String testLanguage = '/test-language';
   static const String translationDebug = '/translation-debug';
+  static const String languageTest = '/language-test';
 
   /// Get all routes
   static List<GetPage> get routes => [
+        // Splash page
+        GetPage(
+          name: splash,
+          page: () => const SplashPage(),
+        ),
+
         // Main tab page
         GetPage(
           name: mainTab,
@@ -125,7 +135,7 @@ class AppRoutes {
         ),
         GetPage(
           name: football,
-          page: () => const FootballPage(),
+          page: () => FootballPage(),
           binding: FootballBinding(),
         ),
         GetPage(
@@ -279,6 +289,12 @@ class AppRoutes {
         GetPage(
           name: translationDebug,
           page: () => const TranslationDebugPage(),
+        ),
+        
+        // Language test route
+        GetPage(
+          name: languageTest,
+          page: () => const LanguageTestPage(),
         ),
       ];
 }

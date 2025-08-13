@@ -942,90 +942,87 @@ class FootballPage extends BaseView<FootballController> {
         width: double.infinity,
         height: double.infinity,
         color: Colors.black,
-        child: Stack(
+        child: Column(
           children: [
-            // 主内容区域
-            Row(
-              children: [
-                // 左侧队伍
-                Expanded(
-                  child: _buildLandscapeTeamSection(1),
+            // 时间显示区域
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.8),
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey[700]!, width: 1),
                 ),
-                // 中间分隔线
-                Container(
-                  width: 2,
-                  color: Colors.grey[700],
-                ),
-                // 右侧队伍
-                Expanded(
-                  child: _buildLandscapeTeamSection(2),
-                ),
-              ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 播放/暂停按钮
+                  Obx(() => IconButton(
+                    onPressed: () {
+                      if (controller.isTimerRunning) {
+                        controller.pauseTimer();
+                      } else {
+                        controller.startTimer();
+                      }
+                    },
+                    icon: Icon(
+                      controller.isTimerRunning ? Icons.pause : Icons.play_arrow,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  )),
+                  const SizedBox(width: 8),
+                  // 时间显示（可点击切换显示模式）
+                  Obx(() => Flexible(
+                    child: GestureDetector(
+                      onTap: () {
+                        controller.toggleTimeDisplayMode();
+                      },
+                      child: Text(
+                        controller.formattedTimeInSeconds,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )),
+                  const SizedBox(width: 8),
+                  // 重置按钮
+                  IconButton(
+                    onPressed: () {
+                      controller.resetTimer();
+                    },
+                    icon: const Icon(
+                      Icons.refresh,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            // 悬浮时间显示
-            Positioned(
-              top: 20,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey[700]!),
+            // 主内容区域
+            Expanded(
+              child: Row(
+                children: [
+                  // 左侧队伍
+                  Expanded(
+                    child: _buildLandscapeTeamSection(1),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 播放/暂停按钮
-                      Obx(() => IconButton(
-                        onPressed: () {
-                          if (controller.isTimerRunning) {
-                            controller.pauseTimer();
-                          } else {
-                            controller.startTimer();
-                          }
-                        },
-                        icon: Icon(
-                          controller.isTimerRunning ? Icons.pause : Icons.play_arrow,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      )),
-                      const SizedBox(width: 8),
-                      // 时间显示（可点击切换显示模式）
-                      GestureDetector(
-                        onTap: () {
-                          controller.toggleTimeDisplayMode();
-                        },
-                        child: Obx(() => Flexible(
-                          child: Text(
-                            controller.formattedTimeInSeconds,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        )),
-                      ),
-                      const SizedBox(width: 8),
-                      // 重置按钮
-                      IconButton(
-                        onPressed: () {
-                          controller.resetTimer();
-                        },
-                        icon: const Icon(
-                          Icons.refresh,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ],
+                  // 中间分隔线
+                  Container(
+                    width: 2,
+                    color: Colors.grey[700],
                   ),
-                ),
+                  // 右侧队伍
+                  Expanded(
+                    child: _buildLandscapeTeamSection(2),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1046,35 +1043,35 @@ class FootballPage extends BaseView<FootballController> {
           // 队伍名称
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               color: isTeam1 ? Colors.blue[900] : Colors.red[900],
             ),
             child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  teamName,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
+              child: Text(
+                teamName,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
           // 分数显示
           Expanded(
-            child: Center(
-              child: Text(
-                teamScore.toString(),
-                style: const TextStyle(
-                  fontSize: 120,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            child: GestureDetector(
+              onTap: () {
+                controller.toggleAppBarVisibility();
+              },
+              child: Center(
+                child: Text(
+                  teamScore.toString(),
+                  style: const TextStyle(
+                    fontSize: 80,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -1082,26 +1079,25 @@ class FootballPage extends BaseView<FootballController> {
           // 进球按钮
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: Center(
               child: ElevatedButton.icon(
                 onPressed: () {
                   controller.addScore(teamNumber, 1);
                 },
                 icon: const Icon(Icons.sports_soccer, color: Colors.white),
-                                                  label: Text(
-                    'team_goal'.tr.replaceAll('{team}', teamName),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                label: Text(
+                  'team_goal'.tr.replaceAll('{team}', teamName),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isTeam1 ? Colors.blue[700] : Colors.red[700],
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),

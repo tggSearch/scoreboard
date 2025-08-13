@@ -490,6 +490,8 @@ class EnUS {
     'gang_point_announce': '{player} gang, {loser} be gang, {score} points',
     'manual_score_announce': '{player} manual {operation} {score} points',
     'game_reset_announce': 'Game reset, all scores cleared',
+    'landlord_wins_announce': 'Landlord {landlord} wins, gets {score} points',
+    'farmers_win_announce': 'Farmers win, landlord {landlord} loses {score} points',
     'current_ranking': 'Current ranking: ',
     'ranking_summary': '{rank}.{player}{score_text}',
     'positive_score': '+{score}',
@@ -740,6 +742,10 @@ class EnUS {
     'wins_match': 'wins match',
     'tennis_history': 'Tennis History',
     'current_game': 'Current Game',
+
+    // Texas Holdem
+    'texas_holdem_score_adjustment': '{player} {action} {adjustment} times',
+    'texas_holdem_result_saved': 'Match result saved',
 
     // History Records
     
