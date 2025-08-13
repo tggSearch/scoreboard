@@ -225,7 +225,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                     )),
                     const SizedBox(width: 8),
                     Obx(() => Text(
-                      '${'initial_chips_value'.tr.replaceAll('{value}', '${(controller.playerScores[player] ?? 1) * controller.initialChips.value}')}',
+                      '${'initial_chips'.tr}: ${(controller.playerScores[player] ?? 1) * controller.initialChips.value}${'points'.tr}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[500],
@@ -242,7 +242,8 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                     final winLossColor = winLoss >= 0 ? Colors.green : Colors.red;
                     final winLossText = winLoss >= 0 ? '+$winLoss' : '$winLoss';
                     
-                    return Row(
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'remaining_chips'.tr + ': ${finalChips}' + 'points'.tr,
@@ -251,8 +252,9 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                             color: Colors.blue[600],
                             fontWeight: FontWeight.w500,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(height: 2),
                         Text(
                           'win_loss'.tr + ': $winLossText' + 'points'.tr,
                           style: TextStyle(
@@ -260,6 +262,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                             color: winLossColor,
                             fontWeight: FontWeight.bold,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     );
