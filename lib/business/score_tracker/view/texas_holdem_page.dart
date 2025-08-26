@@ -1006,9 +1006,9 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              '📊 统计概览',
-                              style: TextStyle(
+                            Text(
+                              'statistics_overview'.tr,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF4CAF50),
@@ -1041,11 +1041,11 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                                   Row(
                                     children: [
                                       Expanded(
-                                        child: _buildStatItem('玩家总数', '${players.length}人', Icons.people),
+                                        child: _buildStatItem('total_players'.tr, '${players.length}人', Icons.people),
                                       ),
                                       Expanded(
                                         child: _buildStatItem(
-                                          '总盈亏',
+                                          'total_win_loss'.tr,
                                           '${totalWinLoss >= 0 ? '+' : ''}${totalWinLoss}分',
                                           totalWinLoss >= 0 ? Icons.trending_up : Icons.trending_down,
                                           color: totalWinLoss >= 0 ? Colors.green : Colors.red,
@@ -1076,7 +1076,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                                               ),
                                               const SizedBox(width: 4),
                                               Text(
-                                                isBalanced ? '平衡' : '不平衡',
+                                                isBalanced ? 'balanced'.tr : 'unbalanced'.tr,
                                                 style: TextStyle(
                                                   color: isBalanced ? Colors.green : Colors.orange,
                                                   fontSize: 10,
@@ -1097,9 +1097,9 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                       ),
                       const SizedBox(height: 16),
                       // 玩家列表
-                      const Text(
-                        '玩家详情',
-                        style: TextStyle(
+                      Text(
+                        'player_details'.tr,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1120,7 +1120,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                             Expanded(
                               flex: 2,
                               child: Text(
-                                '玩家',
+                                'player'.tr,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -1131,7 +1131,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                             Expanded(
                               flex: 2,
                               child: Text(
-                                '初始筹码',
+                                'initial_chips'.tr,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -1142,7 +1142,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                             Expanded(
                               flex: 2,
                               child: Text(
-                                '剩余筹码',
+                                'remaining_chips'.tr,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -1153,7 +1153,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                             Expanded(
                               flex: 2,
                               child: Text(
-                                '盈亏',
+                                'win_loss'.tr,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -1205,7 +1205,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                                 Expanded(
                                   flex: 2,
                                   child: Text(
-                                    finalChips != null ? '${finalChips}' : '未录入',
+                                    finalChips != null ? '${finalChips}' : 'not_entered'.tr,
                                     style: TextStyle(
                                       color: finalChips != null ? Colors.blue[600] : Colors.grey[400],
                                       fontSize: 11,
@@ -1264,7 +1264,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                           await controller.saveCurrentGameDataToHistory();
                         },
                         icon: const Icon(Icons.save, size: 14),
-                        label: const Text('保存', style: TextStyle(fontSize: 11)),
+                        label: Text('save'.tr, style: const TextStyle(fontSize: 11)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4CAF50),
                           foregroundColor: Colors.white,
@@ -1284,8 +1284,8 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                           await Clipboard.setData(ClipboardData(text: copyText));
                           Get.back();
                           Get.snackbar(
-                            '复制成功',
-                            '统计信息已复制到剪贴板',
+                            'copy_success'.tr,
+                            'statistics_copied'.tr,
                             snackPosition: SnackPosition.TOP,
                             backgroundColor: const Color(0xFF4CAF50),
                             colorText: Colors.white,
@@ -1293,7 +1293,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                           );
                         },
                         icon: const Icon(Icons.copy, size: 14),
-                        label: const Text('复制', style: TextStyle(fontSize: 11)),
+                        label: Text('copy'.tr, style: const TextStyle(fontSize: 11)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2196F3),
                           foregroundColor: Colors.white,
@@ -1316,7 +1316,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
-                        child: const Text('关闭', style: TextStyle(fontSize: 11)),
+                        child: Text('close'.tr, style: const TextStyle(fontSize: 11)),
                       ),
                     ),
                   ],
@@ -1411,10 +1411,10 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        '确认重置',
-                        style: TextStyle(
+                        'confirm_reset'.tr,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -1435,10 +1435,10 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                       size: 24,
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        '确定要重置所有玩家的次数为1吗？（不会删除玩家）',
-                        style: TextStyle(
+                        'confirm_reset_content'.tr,
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black87,
                         ),
@@ -1455,9 +1455,9 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                   children: [
                     TextButton(
                       onPressed: () => Get.back(),
-                      child: const Text(
-                        '取消',
-                        style: TextStyle(color: Colors.grey),
+                      child: Text(
+                        'cancel'.tr,
+                        style: const TextStyle(color: Colors.grey),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1473,7 +1473,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text('重置次数'),
+                      child: Text('reset_times'.tr),
                     ),
                   ],
                 ),
@@ -1500,9 +1500,15 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
       if (finalChips != null) {
         final winLoss = finalChips - totalChips;
         final winLossText = winLoss >= 0 ? '+$winLoss' : '$winLoss';
-        lines.add('$player ($totalChips) $finalChips $winLossText（盈亏筹码）');
+        lines.add('copy_text_template'.tr
+            .replaceAll('{player}', player)
+            .replaceAll('{initial_chips}', totalChips.toString())
+            .replaceAll('{final_chips}', finalChips.toString())
+            .replaceAll('{win_loss}', winLossText));
       } else {
-        lines.add('$player ($totalChips) 未录入');
+        lines.add('copy_text_not_entered'.tr
+            .replaceAll('{player}', player)
+            .replaceAll('{initial_chips}', totalChips.toString()));
       }
     }
     
