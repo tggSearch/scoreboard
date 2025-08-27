@@ -286,6 +286,16 @@ class EnUS {
     'balanced': 'Balanced',
     'unbalanced': 'Unbalanced',
     'player_details': 'Player Details',
+    'statistics_overview': '📊 Statistics Overview',
+    'total_players': 'Total Players',
+    'total_win_loss': 'Total Win/Loss',
+    'initial_chips': 'Initial Chips',
+    'not_entered': 'Not Entered',
+    'statistics_copied': 'Statistics copied to clipboard',
+    'confirm_reset_content': 'Are you sure you want to reset all player times to 1? (Players will not be deleted)',
+    'reset_times': 'Reset Times',
+    'copy_text_template': '{player} ({initial_chips}) {final_chips} {win_loss} (Win/Loss chips)',
+    'copy_text_not_entered': '{player} ({initial_chips}) Not Entered',
 
     // Custom Score
     'tied_leading': 'Tied Leading',
@@ -313,7 +323,6 @@ class EnUS {
     'confirm_delete_player': 'Are you sure you want to delete player "{player}"?',
     'leading_text': '{player} leading ({score} points)',
     'tied_leading_text': '{players} tied leading ({score} points)',
-    'player_count_text': 'Players: {count} | {leader_text}',
 
     // History
     'history_records': 'History Records',
@@ -638,7 +647,6 @@ class EnUS {
     'away_team_name': 'Away Team Name',
     'half_time': 'Half Time',
     'extra_time': 'Extra Time',
-    'confirm_reset_content': 'Are you sure you want to reset all data?\n\nAfter reset:\n• Score becomes 0:0\n• Time resets to default time\n• Match phase resets to first half\n• Timer stops',
     'reset_complete_message': 'Score, time, and match phase have all been reset',
     
     // Football Game Phases
@@ -787,5 +795,23 @@ class EnUS {
     'rate_app_subtitle': 'Rate us on the App Store',
     'about_content': 'Score Board Pro is a scoring app designed for various sports competitions and games. We are committed to providing users with simple, efficient, and practical scoring experience.',
     'contact_us': 'Contact us: score@qualrb.com',
+    // Auto-supplemented translations
+    'bridge_scoring': 'Bridge Scoring',
+    'people': 'People',
+    'target': 'Target',
+    'chips': 'Chips',
+    'bu_gang': 'Bu Gang',
+    'gang_shang_pao': 'Gang Shang Pao',
+    'hai_di_lao': 'Hai Di Lao',
+    'gang_kai': 'Gang Kai',
+    'ren_hu': 'Ren Hu',
+    'qing_long_qi_dui': 'Qing Long Qi Dui',
+    'qing_dui': 'Qing Dui',
+    'long_qi_dui': 'Long Qi Dui',
+    'dui_dui_hu': 'Dui Dui Hu',
+    // Auto-supplemented translations
+    'player_count_text': '[玩家: {count}人 | {leader_text}]',
+
+
   };
 }

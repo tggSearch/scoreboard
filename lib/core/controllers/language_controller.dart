@@ -6,7 +6,7 @@ import '../l10n/translation_manager.dart';
 class LanguageController extends GetxController {
   static LanguageController get to => Get.find();
   final RxString currentLanguage = 'en_US'.obs;
-  final List<String> supportedLanguages = ['zh_CN', 'en_US'];
+  final List<String> supportedLanguages = ['zh_CN', 'en_US', 'ja_JP', 'ko_KR', 'fr_FR', 'de_DE', 'es_ES', 'it_IT', 'pt_PT', 'ru_RU'];
 
   @override
   Future<void> onInit() async {
@@ -70,8 +70,56 @@ class LanguageController extends GetxController {
       return 'zh_CN';
     }
     
+    // 如果系统语言是日语，使用日语
+    if (languageCode == 'ja' || languageCode == 'ja-jp') {
+      print('System language detected as Japanese, using ja_JP');
+      return 'ja_JP';
+    }
+    
+    // 如果系统语言是韩语，使用韩语
+    if (languageCode == 'ko' || languageCode == 'ko-kr') {
+      print('System language detected as Korean, using ko_KR');
+      return 'ko_KR';
+    }
+    
+    // 如果系统语言是法语，使用法语
+    if (languageCode == 'fr' || languageCode == 'fr-fr') {
+      print('System language detected as French, using fr_FR');
+      return 'fr_FR';
+    }
+    
+    // 如果系统语言是德语，使用德语
+    if (languageCode == 'de' || languageCode == 'de-de') {
+      print('System language detected as German, using de_DE');
+      return 'de_DE';
+    }
+    
+    // 如果系统语言是西班牙语，使用西班牙语
+    if (languageCode == 'es' || languageCode == 'es-es') {
+      print('System language detected as Spanish, using es_ES');
+      return 'es_ES';
+    }
+    
+    // 如果系统语言是意大利语，使用意大利语
+    if (languageCode == 'it' || languageCode == 'it-it') {
+      print('System language detected as Italian, using it_IT');
+      return 'it_IT';
+    }
+    
+    // 如果系统语言是葡萄牙语，使用葡萄牙语
+    if (languageCode == 'pt' || languageCode == 'pt-pt') {
+      print('System language detected as Portuguese, using pt_PT');
+      return 'pt_PT';
+    }
+    
+    // 如果系统语言是俄语，使用俄语
+    if (languageCode == 'ru' || languageCode == 'ru-ru') {
+      print('System language detected as Russian, using ru_RU');
+      return 'ru_RU';
+    }
+    
     // 其他情况使用英文
-    print('System language detected as non-Chinese, using en_US');
+    print('System language detected as non-Asian, using en_US');
     return 'en_US';
   }
 
@@ -123,4 +171,6 @@ class LanguageController extends GetxController {
 
   bool get isChinese => currentLanguage.value == 'zh_CN';
   bool get isEnglish => currentLanguage.value == 'en_US';
+  bool get isJapanese => currentLanguage.value == 'ja_JP';
+  bool get isKorean => currentLanguage.value == 'ko_KR';
 } 
