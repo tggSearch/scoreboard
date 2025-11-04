@@ -68,5 +68,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UmengAppkey</key>
+	<string>6909afb48560e34872debc5e</string>
+	<key>UmengChannel</key>
+	<string>App Store</string>
 </dict>
 </plist>

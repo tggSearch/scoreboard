@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:common_utils/common_utils.dart';
+import 'package:fl_umeng/fl_umeng.dart';
+import 'dart:io';
 import 'core/routes/app_routes.dart';
 import 'core/l10n/translations.dart';
 import 'core/l10n/app_localizations.dart';
@@ -11,6 +13,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await StorageUtils.init(); // Initialize storage
   
+  // 初始化友盟统计
+  await _initUmeng();
+  
   // 初始化语言控制器
   final languageController = Get.put(LanguageController());
   
@@ -18,6 +23,29 @@ void main() async {
   await languageController.onInit();
   
   runApp(const MyApp());
+}
+
+/// 初始化友盟统计
+Future<void> _initUmeng() async {
+  try {
+    // 设置日志开启（生产环境建议关闭）
+    await FlUMeng().setLogEnabled(true);
+    
+    // 初始化友盟
+    final result = await FlUMeng().init(
+      androidAppKey: '6909af0a8560e34872debbf6',
+      iosAppKey: '6909afb48560e34872debc5e',
+      channel: Platform.isAndroid ? 'default' : 'App Store',
+    );
+    
+    if (result == true) {
+      debugPrint('友盟统计初始化成功');
+    } else {
+      debugPrint('友盟统计初始化失败');
+    }
+  } catch (e) {
+    debugPrint('友盟统计初始化异常: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

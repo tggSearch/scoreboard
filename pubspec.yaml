@@ -15,7 +15,11 @@ dependencies:
   shared_preferences: ^2.2.2
   wakelock_plus: ^1.1.4
   flutter_tts: ^3.8.5
+  # Analytics
+  fl_umeng: ^4.0.2 
   package_info_plus: ^8.0.2
+  
+  # Local packages
   common_utils:
     path: ./common_utils
   common_ui:
