@@ -1,7 +1,6 @@
 PODS:
   - fl_umeng (0.0.1):
     - Flutter
-    - UMAPM
     - UMCommon
     - UMDevice
   - Flutter (1.0.0)
@@ -12,8 +11,6 @@ PODS:
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - UMAPM (2.0.7):
-    - UMCommon
   - UMCommon (7.5.3):
     - UMDevice
   - UMDevice (3.4.0)
@@ -30,7 +27,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - UMAPM
     - UMCommon
     - UMDevice
 
@@ -49,12 +45,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/wakelock_plus/ios"
 
 SPEC CHECKSUMS:
-  fl_umeng: 75b7838223741a9c61eb10fc14daa3072a296c5b
+  fl_umeng: 3d32e5b84cf56f6e6b816c9d2e09f5df7e66df97
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_tts: b88dbc8655d3dc961bc4a796e4e16a4cc1795833
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
-  UMAPM: ba9fbebe8dd2048b251c332ab0afc86e1ba5ea63
   UMCommon: 3b850836e8bc162b4e7f6b527d30071ed8ea75a1
   UMDevice: dcdf7ec167387837559d149fbc7d793d984faf82
   wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556

@@ -46,9 +46,9 @@
 		</dict>
 	</dict>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>App需要语音识别权限用于播报比分</string>
+	<string>App needs speech recognition permission to announce scores</string>
 	<key>NSSpeechSynthesisUsageDescription</key>
-	<string>App需要语音合成权限用于播报比分</string>
+	<string>App needs speech synthesis permission to announce scores</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
