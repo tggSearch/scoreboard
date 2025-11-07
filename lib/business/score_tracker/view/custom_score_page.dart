@@ -294,8 +294,8 @@ class CustomScorePage extends BaseView<CustomScoreController> {
   }
 
   void _showPlayerEditDialog(int index, CustomPlayer player) {
-    String newName = player.name;
-    int newScore = player.score;
+    final nameController = TextEditingController(text: player.name);
+    final scoreController = TextEditingController(text: player.score.toString());
     
     Get.dialog(
       CustomDialog(
@@ -309,10 +309,7 @@ class CustomScorePage extends BaseView<CustomScoreController> {
                         labelText: 'player_name'.tr,
                         border: const OutlineInputBorder(),
                       ),
-                      controller: TextEditingController(text: player.name),
-              onChanged: (value) {
-                newName = value;
-                      },
+                      controller: nameController,
                     ),
                     const SizedBox(height: 16),
                     // 分数输入
@@ -321,12 +318,11 @@ class CustomScorePage extends BaseView<CustomScoreController> {
                         labelText: 'score'.tr,
                         border: const OutlineInputBorder(),
                       ),
-                      controller: TextEditingController(text: player.score.toString()),
+                      controller: scoreController,
                       keyboardType: TextInputType.number,
-              onChanged: (value) {
-                        final score = int.tryParse(value) ?? 0;
-                newScore = score;
-                      },
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
                     ),
           ],
         ),
@@ -337,11 +333,16 @@ class CustomScorePage extends BaseView<CustomScoreController> {
                           ),
           ElevatedButton(
                             onPressed: () {
-              if (newName.trim().isNotEmpty) {
-                controller.setPlayerName(index, newName.trim());
+              // 从控制器获取最新的值
+              final newName = nameController.text.trim();
+              final scoreText = scoreController.text.trim();
+              final newScore = int.tryParse(scoreText) ?? player.score;
+              
+              if (newName.isNotEmpty) {
+                controller.setPlayerName(index, newName);
               }
               controller.setPlayerScore(index, newScore);
-                                Get.back();
+              Get.back();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF4CAF50),

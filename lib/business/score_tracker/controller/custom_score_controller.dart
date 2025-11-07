@@ -79,7 +79,8 @@ class CustomScoreController extends BaseController {
   // 设置玩家名称
   void setPlayerName(int index, String name) {
     if (index >= 0 && index < players.length && name.trim().isNotEmpty) {
-      players[index].name = name.trim();
+      final player = players[index];
+      players[index] = CustomPlayer(name: name.trim(), score: player.score);
       _saveGameData();
     }
   }
@@ -87,15 +88,17 @@ class CustomScoreController extends BaseController {
   // 设置玩家分数
   void setPlayerScore(int index, int score) {
     if (index >= 0 && index < players.length) {
-      players[index].score = score;
+      final player = players[index];
+      players[index] = CustomPlayer(name: player.name, score: score);
       _saveGameData();
     }
   }
 
   // 重置所有分数
   void resetAllScores() {
-    for (var player in players) {
-      player.score = 0;
+    for (int i = 0; i < players.length; i++) {
+      final player = players[i];
+      players[i] = CustomPlayer(name: player.name, score: 0);
     }
     _saveGameData();
     voiceAnnouncer.announce('all_scores_reset'.tr);
