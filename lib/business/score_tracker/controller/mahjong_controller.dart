@@ -24,7 +24,7 @@ class MahjongController extends BaseController {
   final RxInt selectedPlayer = 0.obs;
   
   // 基础分值
-  final RxInt baseScore = 10.obs;
+  final RxInt baseScore = 1.obs;
   
   // 斗地主相关
   final RxInt currentMultiplier = 1.obs;
@@ -89,6 +89,13 @@ class MahjongController extends BaseController {
     'di_hu': 88,
   };
   
+  // 默认杠的番数配置
+  final Map<String, int> defaultGangFans = {
+    'ming_gang': 1,
+    'an_gang': 2,
+    'dian_gang': 1,
+  };
+  
   // 获取指定胡牌类型的番数（自摸）
   Future<int> getFansForWinTypeSelfDraw(String winType) async {
     return defaultFansSelfDraw[winType] ?? 1;
@@ -102,11 +109,27 @@ class MahjongController extends BaseController {
   // 更新指定胡牌类型的番数（自摸）
   Future<void> updateFansForWinTypeSelfDraw(String winType, int fans) async {
     defaultFansSelfDraw[winType] = fans;
+    // 立即保存到本地
+    await MahjongConfig.saveCustomFansSelfDraw(defaultFansSelfDraw);
   }
   
   // 更新指定胡牌类型的番数（点炮）
   Future<void> updateFansForWinTypePointPao(String winType, int fans) async {
     defaultFansPointPao[winType] = fans;
+    // 立即保存到本地
+    await MahjongConfig.saveCustomFansPointPao(defaultFansPointPao);
+  }
+  
+  // 更新指定杠类型的番数
+  Future<void> updateFansForGangType(String gangType, int fans) async {
+    defaultGangFans[gangType] = fans;
+    // 立即保存到本地
+    await MahjongConfig.saveCustomGangFans(defaultGangFans);
+  }
+  
+  // 获取指定杠类型的番数
+  int getFansForGangType(String gangType) {
+    return defaultGangFans[gangType] ?? 1;
   }
   
   // 更新选择的胡牌类型
@@ -177,6 +200,12 @@ class MahjongController extends BaseController {
     _loadWinTypeAndFans();
     // 加载番数配置
     _loadFansConfig();
+    // 加载基础分
+    _loadBaseScore();
+    // 监听基础分变化，自动保存
+    ever(baseScore, (int value) {
+      _saveBaseScore(value);
+    });
   }
   
   @override
@@ -235,6 +264,12 @@ class MahjongController extends BaseController {
       if (pointPaoFans.isNotEmpty) {
         defaultFansPointPao.addAll(pointPaoFans);
       }
+      
+      // 加载杠的番数配置
+      final gangFans = await MahjongConfig.getCustomGangFans();
+      if (gangFans.isNotEmpty) {
+        defaultGangFans.addAll(gangFans);
+      }
     } catch (e) {
       print('加载番数配置失败: $e');
     }
@@ -277,6 +312,31 @@ class MahjongController extends BaseController {
     final score = int.tryParse(scoreText);
     if (score != null && score > 0) {
       baseScore.value = score;
+      // 保存到本地（ever 监听器会自动保存，但这里也可以显式保存）
+      _saveBaseScore(score);
+    }
+  }
+  
+  // 加载基础分
+  Future<void> _loadBaseScore() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedBaseScore = prefs.getInt('mahjong_base_score');
+      if (savedBaseScore != null && savedBaseScore > 0) {
+        baseScore.value = savedBaseScore;
+      }
+    } catch (e) {
+      print('加载基础分失败: $e');
+    }
+  }
+  
+  // 保存基础分
+  Future<void> _saveBaseScore(int score) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('mahjong_base_score', score);
+    } catch (e) {
+      print('保存基础分失败: $e');
     }
   }
   
@@ -326,12 +386,29 @@ class MahjongController extends BaseController {
     // 保存分数
     _saveAllScores();
     
-    // 语音播报
-    if (landlordWins) {
-      voiceAnnouncer.announce('landlord_wins_announce'.tr.replaceAll('{landlord}', landlordName).replaceAll('{score}', landlordScore.toString()));
-    } else {
-      voiceAnnouncer.announce('farmers_win_announce'.tr.replaceAll('{landlord}', landlordName).replaceAll('{score}', landlordScore.toString()));
-    }
+    // 延迟播报所有玩家的最终分数，确保弹窗已完全关闭
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final Map<String, int> finalScores = {};
+      for (int i = 0; i < playerNames.length; i++) {
+        finalScores[playerNames[i]] = playerScores[i];
+      }
+      
+      // 构建播报文本：xxx 地主获胜/农民获胜，最终分数 xxx 是：-64分 xxa是 -32分，xxb是 32分 xxc是 64分
+      String announcement = '';
+      if (landlordWins) {
+        announcement = '$landlordName${'landlord_wins'.tr}';
+      } else {
+        announcement = '${'farmers_win'.tr}';
+      }
+      announcement += '，${'final_scores'.tr}';
+      final List<String> scoreParts = [];
+      finalScores.forEach((playerName, score) {
+        final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
+        scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
+      });
+      announcement += scoreParts.join('，');
+      voiceAnnouncer.announce(announcement);
+    });
   }
 
   // 胡牌 - 自摸
@@ -364,8 +441,13 @@ class MahjongController extends BaseController {
       // 保存分数
       await _saveAllScores();
       
-      // 语音播报
-      voiceAnnouncer.announceWin(playerNames[winnerIndex], winType, totalFans, true);
+      // 语音播报 - 构建文本并播报
+      String announcement = '${playerNames[winnerIndex]} $winType';
+      if (totalFans > 1) {
+        announcement += ' $totalFans${'fans'.tr}';
+      }
+      announcement += ' ${'self_draw'.tr}';
+      voiceAnnouncer.announce(announcement);
       
       // 计分完成播报
       _announceScoreSummary();
@@ -393,8 +475,12 @@ class MahjongController extends BaseController {
       // 保存分数
       await _saveAllScores();
       
-      // 语音播报
-      voiceAnnouncer.announceWin(playerNames[winnerIndex], winType, totalFans, false);
+      // 语音播报 - 构建文本并播报
+      String announcement = '${playerNames[winnerIndex]} $winType';
+      if (totalFans > 1) {
+        announcement += ' $totalFans${'fans'.tr}';
+      }
+      voiceAnnouncer.announce(announcement);
       
       // 计分完成播报
       _announceScoreSummary();
@@ -436,8 +522,12 @@ class MahjongController extends BaseController {
       // 保存分数
       await _saveAllScores();
       
-      // 语音播报
-      voiceAnnouncer.announceGang(playerNames[playerIndex], gangType, fans);
+      // 语音播报 - 构建文本并播报
+      String announcement = '${playerNames[playerIndex]} $gangType';
+      if (fans > 0) {
+        announcement += ' $fans${'fans'.tr}';
+      }
+      voiceAnnouncer.announce(announcement);
       
       // 计分完成播报
       _announceScoreSummary();
@@ -465,8 +555,12 @@ class MahjongController extends BaseController {
       // 保存分数
       await _saveAllScores();
       
-      // 语音播报
-      voiceAnnouncer.announceGang(playerNames[playerIndex], 'dian_gang'.tr, fans);
+      // 语音播报 - 构建文本并播报
+      String announcement = '${playerNames[playerIndex]} ${'dian_gang'.tr}';
+      if (fans > 0) {
+        announcement += ' $fans${'fans'.tr}';
+      }
+      voiceAnnouncer.announce(announcement);
       
       // 计分完成播报
       _announceScoreSummary();
@@ -588,12 +682,25 @@ class MahjongController extends BaseController {
   }
 
   // 重置所有分数（保留玩家名字和记录）
-  Future<void> resetAllScores() async {
+  Future<void> resetAllScores({bool resetConfig = false}) async {
     for (int i = 0; i < playerScores.length; i++) {
       playerScores[i] = 0;
     }
     // 不清空记录，保留历史
     // records.clear();
+    
+    // 如果重置配置，恢复所有配置为默认值（包括基础分和番数）
+    if (resetConfig) {
+      // 重置基础分为默认值 1
+      baseScore.value = 1;
+      await _saveBaseScore(1);
+      
+      // 重置配置为默认值（番数配置）
+      await MahjongConfig.resetAllConfig();
+      // 重新加载配置
+      await _loadFansConfig();
+    }
+    // 如果不重置配置，则保留基础分和番数配置不变
     
     // 保存重置后的分数
     await _saveAllScores();
@@ -804,35 +911,32 @@ class MahjongController extends BaseController {
       case 'zhuama':
         return 1; // 抓码默认1番
       case 'gang':
-        switch (type) {
-          case 'ming_gang':
-            return 1;
-          case 'an_gang':
-            return 2;
-          case 'dian_gang':
-            return 1;
-          default:
-            return 1;
-        }
+        return defaultGangFans[type] ?? 1;
       default:
         return 1;
     }
   }
   
   // 设置指定类型的番数
-  void setFansForType(String type, String category, int fans) {
+  Future<void> setFansForType(String type, String category, int fans) async {
     switch (category) {
       case 'win_selfdraw':
         defaultFansSelfDraw[type] = fans;
+        // 立即保存到本地
+        await MahjongConfig.saveCustomFansSelfDraw(defaultFansSelfDraw);
         break;
       case 'win_pointpao':
         defaultFansPointPao[type] = fans;
+        // 立即保存到本地
+        await MahjongConfig.saveCustomFansPointPao(defaultFansPointPao);
         break;
       case 'zhuama':
         // 抓码番数可以单独配置
         break;
       case 'gang':
-        // 杠牌番数可以单独配置
+        defaultGangFans[type] = fans;
+        // 立即保存到本地
+        await MahjongConfig.saveCustomGangFans(defaultGangFans);
         break;
     }
   }
@@ -843,6 +947,8 @@ class MahjongController extends BaseController {
     await MahjongConfig.saveCustomFansSelfDraw(defaultFansSelfDraw);
     // 保存点炮番数配置
     await MahjongConfig.saveCustomFansPointPao(defaultFansPointPao);
+    // 保存杠的番数配置
+    await MahjongConfig.saveCustomGangFans(defaultGangFans);
   }
 }
 

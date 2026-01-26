@@ -164,35 +164,42 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome card
-            _buildWelcomeCard(),
-            const SizedBox(height: 24),
-            
-            // Search section
-            _buildSearchSection(context),
-            const SizedBox(height: 24),
-            
-            // Search results or normal content
-            if (_isSearching) ...[
-              _buildSearchResults(context),
-            ] else ...[
-              // Quick start
-              _buildQuickStartSection(context),
+      body: GestureDetector(
+        onTap: () {
+          // 点击其他地方时收起键盘
+          FocusScope.of(context).unfocus();
+        },
+        behavior: HitTestBehavior.opaque,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome card
+              _buildWelcomeCard(),
               const SizedBox(height: 24),
               
-              // Popular scoring
-              _buildPopularSection(context),
+              // Search section
+              _buildSearchSection(context),
               const SizedBox(height: 24),
               
-              // All categories
-              _buildAllCategoriesSection(context),
+              // Search results or normal content
+              if (_isSearching) ...[
+                _buildSearchResults(context),
+              ] else ...[
+                // Quick start
+                _buildQuickStartSection(context),
+                const SizedBox(height: 24),
+                
+                // Popular scoring
+                _buildPopularSection(context),
+                const SizedBox(height: 24),
+                
+                // All categories
+                _buildAllCategoriesSection(context),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

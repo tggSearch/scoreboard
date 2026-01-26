@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/mahjong_controller.dart';
+import '../../../core/utils/mahjong_config.dart';
 import 'package:common_ui/common_ui.dart';
 
 class MahjongPage extends BaseView<MahjongController> {
@@ -366,36 +367,68 @@ class MahjongPage extends BaseView<MahjongController> {
   }
 
   Widget _buildBaseScoreSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 1),
+    return Row(
+      children: [
+        Text(
+          'base_score'.tr,
+          style: const TextStyle(fontSize: 14, color: Colors.black87),
+        ),
+        const SizedBox(width: 12),
+        // 减少按钮
+        Obx(() => GestureDetector(
+          onTap: () {
+            if (controller.baseScore.value > 1) {
+              controller.baseScore.value--;
+            }
+          },
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: controller.baseScore.value > 1 
+                  ? const Color(0xFF4CAF50)
+                  : Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.remove,
+              size: 16,
+              color: controller.baseScore.value > 1 
+                  ? Colors.white 
+                  : Colors.grey.shade600,
+            ),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text('base_score'.tr, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-          const SizedBox(width: 16),
-          Expanded(
-            child: TextField(
-              controller: TextEditingController(text: controller.baseScore.toString()),
+        )),
+        const SizedBox(width: 8),
+        // 数值输入框
+        Expanded(
+          child: Obx(() {
+            return TextField(
+              controller: TextEditingController(
+                text: controller.baseScore.value.toString(),
+              )..selection = TextSelection.collapsed(
+                offset: controller.baseScore.value.toString().length,
+              ),
+              textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
+              style: const TextStyle(fontSize: 14),
+              // 禁用自动聚焦，只有用户主动点击时才聚焦
+              enableInteractiveSelection: true,
               decoration: InputDecoration(
-                hintText: 'base_score'.tr,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(4),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 1),
+                ),
               ),
               onChanged: (value) {
                 final score = int.tryParse(value);
@@ -403,10 +436,37 @@ class MahjongPage extends BaseView<MahjongController> {
                   controller.baseScore.value = score;
                 }
               },
+              onEditingComplete: () {
+                if (controller.baseScore.value <= 0) {
+                  controller.baseScore.value = 1;
+                }
+                // 完成编辑后取消焦点
+                FocusScope.of(Get.context!).unfocus();
+              },
+            );
+          }),
+        ),
+        const SizedBox(width: 8),
+        // 增加按钮
+        GestureDetector(
+          onTap: () {
+            controller.baseScore.value++;
+          },
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: const Color(0xFF4CAF50),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Icon(
+              Icons.add,
+              size: 16,
+              color: Colors.white,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -563,68 +623,83 @@ class MahjongPage extends BaseView<MahjongController> {
             // 主要游戏操作 - 突出显示
             Text('game_operations'.tr, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Get.back();
-                      _showWinDialog();
-                    },
-                    icon: const Icon(Icons.emoji_events, color: Colors.white),
-                    label: Text('win_game'.tr, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF9800),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          // 先取消焦点，避免焦点转移到其他输入框
+                          FocusScope.of(Get.context!).unfocus();
+                          // 先关闭当前弹窗
+                          Get.back();
+                          // 使用 Future.microtask 确保在下一帧执行，让对话框完全关闭
+                          Future.microtask(() {
+                            _showWinDialog();
+                          });
+                        },
+                        icon: const Icon(Icons.emoji_events, color: Colors.white, size: 18),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('win_game'.tr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF9800),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          minimumSize: const Size(0, 44),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Get.back();
-                      _showGangDialog();
-                    },
-                    icon: const Icon(Icons.diamond, color: Colors.white),
-                    label: Text('gang'.tr, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF9C27B0),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          // 先取消焦点，避免焦点转移到其他输入框
+                          FocusScope.of(Get.context!).unfocus();
+                          // 先关闭当前弹窗
+                          Get.back();
+                          // 使用 Future.microtask 确保在下一帧执行，让对话框完全关闭
+                          Future.microtask(() {
+                            _showGangDialog();
+                          });
+                        },
+                        icon: const Icon(Icons.diamond, color: Colors.white, size: 18),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('gang'.tr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF9C27B0),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          minimumSize: const Size(0, 44),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
             
             const SizedBox(height: 20),
             const Divider(),
-            const SizedBox(height: 8),
-            
-            // 玩家信息编辑 - 弱化显示
-            Row(
-              children: [
-                Icon(Icons.edit, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text('edit_info'.tr, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-              ],
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             
             // 玩家名称编辑
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    '${'name'.tr}: $currentName',
+                    '${'player_name'.tr}: $currentName',
                     style: const TextStyle(fontSize: 14),
                   ),
                 ),
@@ -799,10 +874,12 @@ class MahjongPage extends BaseView<MahjongController> {
           }
           return null;
         },
-        onConfirm: (newValue) {
+        onConfirm: (newValue) async {
           final newScore = int.tryParse(newValue);
           if (newScore != null && newScore >= 0) {
             gangScore.value = newScore;
+            // 保存到配置
+            await controller.updateFansForGangType(gangMethod, newScore);
             Get.snackbar(
               'fans_config_save_success'.tr,
               '${gangMethod}番数已更新为${newScore}番',
@@ -853,12 +930,152 @@ class MahjongPage extends BaseView<MahjongController> {
     );
   }
 
+  // 显示胡牌类型选择弹窗
+  void _showWinTypeSelectionDialog(String winMethod) {
+    Get.dialog(
+      CustomDialog(
+        title: 'win_type'.tr,
+        content: Container(
+          constraints: const BoxConstraints(maxHeight: 400),
+          child: SingleChildScrollView(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // 根据可用宽度计算每行显示的数量（2列）
+                final itemWidth = (constraints.maxWidth - 12) / 2;
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.start,
+                  children: controller.winTypes.map((type) {
+                    return Obx(() {
+                      final isSelected = controller.selectedWinType.value == type;
+                      return GestureDetector(
+                        onTap: () async {
+                          controller.selectedWinType.value = type;
+                          // 根据当前胡牌方式更新番数
+                          if (winMethod == 'self_draw') {
+                            final fans = await controller.getFansForWinTypeSelfDraw(type);
+                            controller.selectedFans.value = fans;
+                          } else if (winMethod == 'point_pao') {
+                            final fans = await controller.getFansForWinTypePointPao(type);
+                            controller.selectedFans.value = fans;
+                          }
+                          Get.back();
+                        },
+                        child: Container(
+                          width: itemWidth,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected 
+                                ? const Color(0xFF4CAF50)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isSelected 
+                                  ? const Color(0xFF4CAF50)
+                                  : Colors.grey.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ]
+                                : [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.1),
+                                      blurRadius: 3,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (isSelected)
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.white,
+                                  size: 16,
+                                )
+                              else
+                                Icon(
+                                  Icons.radio_button_unchecked,
+                                  color: Colors.grey.shade400,
+                                  size: 16,
+                                ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  type.tr,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    color: isSelected 
+                                        ? Colors.white 
+                                        : Colors.black87,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    });
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('cancel'.tr),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 显示胡牌对话框
   void _showWinDialog() {
     // 胡牌方式选择状态
     final RxString winMethod = ''.obs;
     final RxInt selectedLoser = (-1).obs;
     final RxInt zhuamaFans = 0.obs; // 抓码番数，默认0
+    final RxBool gangShangKaiHua = false.obs; // 杠上开花，默认false
+    final RxBool zhuamaExpanded = false.obs; // 抓码是否展开
+    final RxBool zhuamaUsedBefore = false.obs; // 是否使用过抓码
+    final TextEditingController zhuamaCustomController = TextEditingController(); // 自定义抓码输入控制器
+    
+    // 检查是否使用过抓码，并读取展开状态
+    MahjongConfig.hasUsedZhuama().then((used) {
+      zhuamaUsedBefore.value = used;
+      // 读取保存的展开状态
+      MahjongConfig.getZhuamaExpanded().then((expanded) {
+        if (expanded != null) {
+          // 如果保存过状态，使用保存的状态
+          zhuamaExpanded.value = expanded;
+        } else {
+          // 如果从未保存过状态
+          if (used) {
+            // 如果使用过抓码，默认展开（兼容旧行为）
+            zhuamaExpanded.value = true;
+            // 保存展开状态
+            MahjongConfig.setZhuamaExpanded(true);
+          } else {
+            // 如果未使用过，默认收起
+            zhuamaExpanded.value = false;
+          }
+        }
+      });
+    });
     
     Get.dialog(
       CustomDialog(
@@ -868,53 +1085,75 @@ class MahjongPage extends BaseView<MahjongController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 第一步：选择胡牌方式
-            Text('select_win_method'.tr, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Obx(() => ElevatedButton(
-                    onPressed: () async {
-                      winMethod.value = 'self_draw';
-                      // 更新为自摸番数
-                      final fans = await controller.getFansForWinTypeSelfDraw(controller.selectedWinType.value);
-                      controller.selectedFans.value = fans;
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: winMethod.value == 'self_draw' 
-                        ? const Color(0xFF4CAF50) 
-                        : Colors.grey.shade300,
-                      foregroundColor: winMethod.value == 'self_draw' 
-                        ? Colors.white 
-                        : Colors.black87,
+            const SizedBox(height: 4),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Obx(() => ElevatedButton(
+                        onPressed: () async {
+                          winMethod.value = 'self_draw';
+                          // 更新为自摸番数
+                          final fans = await controller.getFansForWinTypeSelfDraw(controller.selectedWinType.value);
+                          controller.selectedFans.value = fans;
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: winMethod.value == 'self_draw' 
+                            ? const Color(0xFF4CAF50) 
+                            : Colors.grey.shade200,
+                          foregroundColor: winMethod.value == 'self_draw' 
+                            ? Colors.white 
+                            : Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          minimumSize: const Size(0, 40),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: winMethod.value == 'self_draw' ? 1 : 0,
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('self_draw'.tr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                        ),
+                      )),
                     ),
-                    child: Text('self_draw'.tr),
-                  )),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Obx(() => ElevatedButton(
-                    onPressed: () async {
-                      winMethod.value = 'point_pao';
-                      // 更新为点炮番数
-                      final fans = await controller.getFansForWinTypePointPao(controller.selectedWinType.value);
-                      controller.selectedFans.value = fans;
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: winMethod.value == 'point_pao' 
-                        ? const Color(0xFF4CAF50) 
-                        : Colors.grey.shade300,
-                      foregroundColor: winMethod.value == 'point_pao' 
-                        ? Colors.white 
-                        : Colors.black87,
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Obx(() => ElevatedButton(
+                        onPressed: () async {
+                          winMethod.value = 'point_pao';
+                          // 更新为点炮番数
+                          final fans = await controller.getFansForWinTypePointPao(controller.selectedWinType.value);
+                          controller.selectedFans.value = fans;
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: winMethod.value == 'point_pao' 
+                            ? const Color(0xFF4CAF50) 
+                            : Colors.grey.shade200,
+                          foregroundColor: winMethod.value == 'point_pao' 
+                            ? Colors.white 
+                            : Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          minimumSize: const Size(0, 40),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: winMethod.value == 'point_pao' ? 1 : 0,
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('point_pao'.tr, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                        ),
+                      )),
                     ),
-                    child: Text('point_pao'.tr),
-                  )),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             
             // 第二步：点炮时选择被点炮者
             Obx(() {
@@ -923,10 +1162,10 @@ class MahjongPage extends BaseView<MahjongController> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('select_loser'.tr, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
+                    runSpacing: 8,
                     children: controller.playerNames.asMap().entries.map((entry) {
                       final index = entry.key;
                       final name = entry.value;
@@ -937,30 +1176,31 @@ class MahjongPage extends BaseView<MahjongController> {
                           selectedLoser.value = index;
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.red : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(16),
+                            color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isSelected ? Colors.red : Colors.grey.shade300,
+                              color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                              width: 2,
                             ),
                           ),
                           child: Text(
                             name,
                             style: TextStyle(
                               color: isSelected ? Colors.white : Colors.black87,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                              fontSize: 14,
                             ),
                           ),
                         ),
                       );
                     }).toList(),
                   ),
+                  const SizedBox(height: 12),
                 ],
               );
             }),
-            
-            const SizedBox(height: 16),
             
             // 第三步：选择胡牌类型和番数
             Obx(() {
@@ -972,101 +1212,324 @@ class MahjongPage extends BaseView<MahjongController> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('select_win_type_and_fans'.tr, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   
-                  // 胡牌类型选择
-                  DropdownButtonFormField<String>(
-                    value: controller.selectedWinType.value,
-                    decoration: InputDecoration(
-                      labelText: 'win_type'.tr,
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  // 使用卡片式设计，统一主题色
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200, width: 1),
                     ),
-                    items: controller.winTypes.map((type) {
-                      return DropdownMenuItem(value: type, child: Text(type.tr));
-                    }).toList(),
-                    onChanged: (value) async {
-                      if (value != null) {
-                        controller.selectedWinType.value = value;
-                        // 根据当前胡牌方式更新番数
-                        if (winMethod.value == 'self_draw') {
-                          final fans = await controller.getFansForWinTypeSelfDraw(value);
-                          controller.selectedFans.value = fans;
-                        } else if (winMethod.value == 'point_pao') {
-                          final fans = await controller.getFansForWinTypePointPao(value);
-                          controller.selectedFans.value = fans;
-                        }
-                      }
-                    },
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // 番数显示和修改
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Obx(() => Text(
-                          '${'fans'.tr}: ${controller.selectedFans.value}',
-                          style: const TextStyle(fontSize: 14),
-                        )),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          _showFansEditDialog(winMethod.value);
-                        },
-                        icon: Icon(Icons.edit, size: 16, color: Colors.grey[600]),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // 抓码番数输入
-                  Row(
-                    children: [
-                      Text('${'zhuama'.tr}: ', style: const TextStyle(fontSize: 14)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextField(
-                          controller: TextEditingController(text: zhuamaFans.value.toString()),
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            hintText: '0',
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            isDense: true,
+                    child: Column(
+                      children: [
+                        // 胡牌类型选择
+                        Obx(() => ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: Icon(Icons.casino, color: const Color(0xFF4CAF50), size: 20),
+                          title: Text(
+                            controller.selectedWinType.value.tr,
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                           ),
-                          style: const TextStyle(fontSize: 14),
+                          trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+                          onTap: () {
+                            _showWinTypeSelectionDialog(winMethod.value);
+                          },
+                        )),
+                        
+                        const Divider(height: 1, indent: 16),
+                        
+                        // 番数显示和修改
+                        Obx(() => ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: Icon(Icons.star, color: const Color(0xFF4CAF50), size: 20),
+                          title: Text(
+                            '${'fans'.tr}: ${controller.selectedFans.value}',
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                          ),
+                          trailing: IconButton(
+                            onPressed: () {
+                              _showFansEditDialog(winMethod.value);
+                            },
+                            icon: Icon(Icons.edit, size: 18, color: const Color(0xFF4CAF50)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            tooltip: 'modify_fans'.tr,
+                          ),
+                        )),
+                        
+                        const Divider(height: 1, indent: 16),
+                        
+                        // 杠上开花选项
+                        Obx(() => CheckboxListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          value: gangShangKaiHua.value,
                           onChanged: (value) {
-                            final fans = int.tryParse(value);
-                            if (fans != null && fans >= 0) {
-                              zhuamaFans.value = fans;
-                            }
+                            gangShangKaiHua.value = value ?? false;
+                          },
+                          title: Text(
+                            'gang_shang_kai_hua'.tr,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: gangShangKaiHua.value ? const Color(0xFF4CAF50) : Colors.black87,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'gang_shang_kai_hua_hint'.tr,
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                          activeColor: const Color(0xFF4CAF50),
+                          controlAffinity: ListTileControlAffinity.leading,
+                        )),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // 抓码番数（可展开/收起）- 使用卡片式设计
+                  Obx(() {
+                    // 如果使用过，默认展开；否则显示展开箭头
+                    if (!zhuamaUsedBefore.value && !zhuamaExpanded.value) {
+                      // 未使用过且未展开：显示展开箭头
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200, width: 1),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: Icon(Icons.casino, color: const Color(0xFF4CAF50), size: 20),
+                          title: Text(
+                            'zhuama'.tr,
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                          ),
+                          trailing: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade400, size: 20),
+                          onTap: () {
+                            zhuamaExpanded.value = true;
+                            // 保存展开状态
+                            MahjongConfig.setZhuamaExpanded(true);
                           },
                         ),
+                      );
+                    }
+                    
+                    // 展开状态：显示快速选择和自定义输入
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200, width: 1),
                       ),
-                    ],
-                  ),
+                      child: Column(
+                        children: [
+                          // 标题和收起按钮
+                          ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: Icon(Icons.casino, color: const Color(0xFF4CAF50), size: 20),
+                            title: Row(
+                              children: [
+                                Text(
+                                  'zhuama'.tr,
+                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                ),
+                                if (zhuamaFans.value > 0) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '${zhuamaFans.value}',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Color(0xFF4CAF50),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            trailing: Icon(
+                              zhuamaExpanded.value ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                              color: Colors.grey.shade400,
+                              size: 20,
+                            ),
+                            onTap: () {
+                              zhuamaExpanded.value = !zhuamaExpanded.value;
+                              // 保存展开状态
+                              MahjongConfig.setZhuamaExpanded(zhuamaExpanded.value);
+                            },
+                          ),
+                          
+                          // 展开内容
+                          if (zhuamaExpanded.value) ...[
+                            const Divider(height: 1, indent: 16),
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // 快速选择按钮（1-5）
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: List.generate(5, (index) {
+                                      final value = index + 1;
+                                      final isSelected = zhuamaFans.value == value;
+                                      return GestureDetector(
+                                        onTap: () {
+                                          zhuamaFans.value = value;
+                                          zhuamaCustomController.clear(); // 选择快速按钮时清空自定义输入
+                                          if (value > 0) {
+                                            MahjongConfig.markZhuamaUsed();
+                                            zhuamaUsedBefore.value = true;
+                                          }
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(
+                                              color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '$value',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                              color: isSelected ? Colors.white : Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                  
+                                  const SizedBox(height: 12),
+                                  
+                                  // 自定义输入
+                                  Obx(() {
+                                    // 同步自定义输入框的值（仅当值大于5时显示）
+                                    if (zhuamaFans.value > 5 && zhuamaCustomController.text != zhuamaFans.value.toString()) {
+                                      zhuamaCustomController.text = zhuamaFans.value.toString();
+                                    } else if (zhuamaFans.value <= 5 && zhuamaCustomController.text.isNotEmpty) {
+                                      zhuamaCustomController.clear();
+                                    }
+                                    return TextField(
+                                      controller: zhuamaCustomController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: '自定义',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                        ),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                        isDense: true,
+                                        filled: true,
+                                        fillColor: Colors.grey.shade50,
+                                      ),
+                                      style: const TextStyle(fontSize: 14),
+                                      onChanged: (value) {
+                                        final fans = int.tryParse(value);
+                                        if (fans != null && fans >= 0) {
+                                          zhuamaFans.value = fans;
+                                          if (fans > 0) {
+                                            MahjongConfig.markZhuamaUsed();
+                                            zhuamaUsedBefore.value = true;
+                                          }
+                                        } else if (value.isEmpty) {
+                                          zhuamaFans.value = 0;
+                                        }
+                                      },
+                                      onTap: () {
+                                        // 点击自定义输入时，如果当前值是1-5，清空并重置为0
+                                        if (zhuamaFans.value > 0 && zhuamaFans.value <= 5) {
+                                          zhuamaFans.value = 0;
+                                          zhuamaCustomController.clear();
+                                        }
+                                      },
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }),
                   
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   
-                  // 总番数显示
-                  Obx(() => Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: Colors.orange.shade200),
-                    ),
-                    child: Text(
-                      '${'total_fans'.tr}: ${controller.selectedFans.value + zhuamaFans.value}',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.orange),
-                    ),
-                  )),
+                  // 总番数显示 - 使用主题色
+                  Obx(() {
+                    // 计算：基础番数 × 杠上开花倍数 + 抓码番数
+                    int baseFans = controller.selectedFans.value;
+                    if (gangShangKaiHua.value) {
+                      baseFans *= 2; // 杠上开花只对基础番数生效
+                    }
+                    baseFans += zhuamaFans.value; // 最后加上抓码番数
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4CAF50),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.star, color: Colors.white, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${'total_fans'.tr}: $baseFans',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (gangShangKaiHua.value) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.25),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                '×2',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }),
                 ],
               );
             }),
@@ -1074,36 +1537,78 @@ class MahjongPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
-            child: Text('cancel'.tr),
+            onPressed: () {
+              // 取消焦点，避免焦点转移到其他输入框
+              FocusScope.of(Get.context!).unfocus();
+              Get.back();
+            },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: Text(
+              'cancel'.tr,
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
+            ),
           ),
-          Obx(() => ElevatedButton(
-            onPressed: (winMethod.value.isNotEmpty && 
-                       (winMethod.value != 'point_pao' || selectedLoser.value != -1))
-                ? () {
-                    // 执行胡牌操作
-                    if (winMethod.value == 'self_draw') {
-                      // 自摸：使用当前点击的玩家
-                      _confirmSelfDraw(controller.selectedPlayer.value, zhuamaFans.value);
-                    } else {
-                      // 点炮：胡牌者是当前点击的玩家，被点炮者是选择的玩家
-                      _confirmPointPao(controller.selectedPlayer.value, selectedLoser.value, zhuamaFans.value);
+          Obx(() {
+            final bool canConfirm = winMethod.value.isNotEmpty && 
+                                   (winMethod.value != 'point_pao' || selectedLoser.value != -1);
+            return ElevatedButton(
+              onPressed: canConfirm
+                  ? () {
+                      // 先关闭当前弹窗
+                      Get.back();
+                      // 如果使用了抓码，标记为已使用
+                      if (zhuamaFans.value > 0) {
+                        MahjongConfig.markZhuamaUsed();
+                      }
+                      // 使用 Future.microtask 确保在下一帧执行，避免阻塞
+                      Future.microtask(() async {
+                        // 等待弹窗完全关闭后再执行操作
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        // 执行胡牌操作
+                        if (winMethod.value == 'self_draw') {
+                          // 自摸：使用当前点击的玩家
+                          _confirmSelfDraw(controller.selectedPlayer.value, zhuamaFans.value, gangShangKaiHua.value);
+                        } else {
+                          // 点炮：胡牌者是当前点击的玩家，被点炮者是选择的玩家
+                          _confirmPointPao(controller.selectedPlayer.value, selectedLoser.value, zhuamaFans.value, gangShangKaiHua.value);
+                        }
+                      });
                     }
-                    Navigator.of(Get.context!).pop(); // 使用 Navigator 关闭对话框
-                  }
-                : null,
-            child: Text('confirm'.tr),
-          )),
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 2,
+              ),
+              child: Text('confirm'.tr, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            );
+          }),
         ],
       ),
-    );
+    ).then((_) {
+      // 对话框关闭时清理资源和取消焦点
+      zhuamaCustomController.dispose();
+      // 取消焦点，避免焦点自动转移到其他输入框
+      FocusScope.of(Get.context!).unfocus();
+    });
   }
 
   // 确认自摸
-  void _confirmSelfDraw(int winnerIndex, int zhuamaFans) {
+  void _confirmSelfDraw(int winnerIndex, int zhuamaFans, bool gangShangKaiHua) {
     final fans = controller.selectedFans.value;
     final baseScore = controller.baseScore.value;
-    final totalFans = fans + zhuamaFans; // 总番数 = 胡牌番数 + 抓码番数
+    // 计算：基础番数 × 杠上开花倍数 + 抓码番数
+    int totalFans = fans;
+    if (gangShangKaiHua) {
+      totalFans *= 2; // 杠上开花只对基础番数生效
+    }
+    totalFans += zhuamaFans; // 最后加上抓码番数
     final totalScore = totalFans * baseScore;
     
     // 记录变化前的分数
@@ -1124,7 +1629,7 @@ class MahjongPage extends BaseView<MahjongController> {
       playerIndex: winnerIndex,
       playerName: controller.playerNames[winnerIndex],
       score: totalScore * 3,
-              description: 'self_draw_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{fans}', fans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
+              description: 'self_draw_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{fans}', fans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : '') + (gangShangKaiHua ? '（${'gang_shang_kai_hua'.tr}×2）' : ''),
       timestamp: DateTime.now(),
       scoresAtTime: oldScores,
       scoreChanges: {
@@ -1141,7 +1646,7 @@ class MahjongPage extends BaseView<MahjongController> {
           playerIndex: i,
           playerName: controller.playerNames[i],
           score: -totalScore,
-          description: 'be_self_draw_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{total_fans}', (fans + zhuamaFans).toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
+          description: 'be_self_draw_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{total_fans}', totalFans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : '') + (gangShangKaiHua ? '（${'gang_shang_kai_hua'.tr}×2）' : ''),
           timestamp: DateTime.now(),
           scoresAtTime: oldScores,
           scoreChanges: {
@@ -1163,13 +1668,37 @@ class MahjongPage extends BaseView<MahjongController> {
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
+    
+    // 延迟播报所有玩家的最终分数，确保弹窗已完全关闭
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final Map<String, int> finalScores = {};
+      for (int i = 0; i < controller.playerNames.length; i++) {
+        finalScores[controller.playerNames[i]] = controller.playerScores[i];
+      }
+      final winAction = '${controller.playerNames[winnerIndex]}${'win_game'.tr}';
+      // 构建播报文本：xxx 胡牌，最终分数 xxx 是：-64分 xxa是 -32分，xxb是 32分 xxc是 64分
+      String announcement = winAction;
+      announcement += '，${'final_scores'.tr}';
+      final List<String> scoreParts = [];
+      finalScores.forEach((playerName, score) {
+        final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
+        scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
+      });
+      announcement += scoreParts.join('，');
+      controller.voiceAnnouncer.announce(announcement);
+    });
   }
 
   // 确认点炮
-  void _confirmPointPao(int winnerIndex, int loserIndex, int zhuamaFans) {
+  void _confirmPointPao(int winnerIndex, int loserIndex, int zhuamaFans, bool gangShangKaiHua) {
     final fans = controller.selectedFans.value;
     final baseScore = controller.baseScore.value;
-    final totalFans = fans + zhuamaFans; // 总番数 = 胡牌番数 + 抓码番数
+    // 计算：基础番数 × 杠上开花倍数 + 抓码番数
+    int totalFans = fans;
+    if (gangShangKaiHua) {
+      totalFans *= 2; // 杠上开花只对基础番数生效
+    }
+    totalFans += zhuamaFans; // 最后加上抓码番数
     final totalScore = totalFans * baseScore;
     
     // 记录变化前的分数
@@ -1184,7 +1713,7 @@ class MahjongPage extends BaseView<MahjongController> {
       playerIndex: winnerIndex,
       playerName: controller.playerNames[winnerIndex],
       score: totalScore,
-              description: 'point_pao_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{fans}', fans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
+              description: 'point_pao_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{fans}', fans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : '') + (gangShangKaiHua ? '（${'gang_shang_kai_hua'.tr}×2）' : ''),
       timestamp: DateTime.now(),
       scoresAtTime: oldScores,
       scoreChanges: {
@@ -1199,7 +1728,7 @@ class MahjongPage extends BaseView<MahjongController> {
       playerIndex: loserIndex,
       playerName: controller.playerNames[loserIndex],
       score: -totalScore,
-        description: 'be_point_pao_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{total_fans}', (fans + zhuamaFans).toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
+          description: 'be_point_pao_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{total_fans}', totalFans.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : '') + (gangShangKaiHua ? '（${'gang_shang_kai_hua'.tr}×2）' : ''),
       timestamp: DateTime.now(),
       scoresAtTime: oldScores,
       scoreChanges: {
@@ -1219,6 +1748,25 @@ class MahjongPage extends BaseView<MahjongController> {
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
+    
+    // 延迟播报所有玩家的最终分数，确保弹窗已完全关闭
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final Map<String, int> finalScores = {};
+      for (int i = 0; i < controller.playerNames.length; i++) {
+        finalScores[controller.playerNames[i]] = controller.playerScores[i];
+      }
+      final winAction = '${controller.playerNames[winnerIndex]}${'win_game'.tr}';
+      // 构建播报文本：xxx 胡牌，最终分数 xxx 是：-64分 xxa是 -32分，xxb是 32分 xxc是 64分
+      String announcement = winAction;
+      announcement += '，${'final_scores'.tr}';
+      final List<String> scoreParts = [];
+      finalScores.forEach((playerName, score) {
+        final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
+        scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
+      });
+      announcement += scoreParts.join('，');
+      controller.voiceAnnouncer.announce(announcement);
+    });
   }
 
   // 显示杠牌对话框
@@ -1226,7 +1774,7 @@ class MahjongPage extends BaseView<MahjongController> {
     // 杠牌方式选择状态
     final RxString gangMethod = 'ming_gang'.obs;
     final RxInt selectedLoser = (-1).obs;
-    final RxInt gangScore = 1.obs; // 默认1番
+    final RxInt gangScore = controller.getFansForGangType('ming_gang').obs; // 从配置读取默认值
     
     Get.dialog(
       CustomDialog(
@@ -1237,63 +1785,83 @@ class MahjongPage extends BaseView<MahjongController> {
           children: [
             // 第一步：选择杠牌方式
             Text('select_gang_method'.tr, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Obx(() => ElevatedButton(
-                    onPressed: () {
-                      gangMethod.value = 'ming_gang';
-                      gangScore.value = 1; // 明杠1倍
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: gangMethod.value == 'ming_gang' 
-                        ? const Color(0xFF4CAF50) 
-                        : Colors.grey.shade300,
-                      foregroundColor: gangMethod.value == 'ming_gang' 
-                        ? Colors.white 
-                        : Colors.black87,
+            const SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Obx(() => ElevatedButton(
+                        onPressed: () {
+                          gangMethod.value = 'ming_gang';
+                          gangScore.value = controller.getFansForGangType('ming_gang'); // 从配置读取
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: gangMethod.value == 'ming_gang' 
+                            ? const Color(0xFF4CAF50) 
+                            : Colors.grey.shade300,
+                          foregroundColor: gangMethod.value == 'ming_gang' 
+                            ? Colors.white 
+                            : Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+                          minimumSize: const Size(0, 44),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('ming_gang'.tr, style: const TextStyle(fontSize: 13)),
+                        ),
+                      )),
                     ),
-                    child: Text('ming_gang'.tr),
-                  )),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Obx(() => ElevatedButton(
-                    onPressed: () {
-                      gangMethod.value = 'an_gang';
-                      gangScore.value = 2; // 暗杠2倍
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: gangMethod.value == 'an_gang' 
-                        ? const Color(0xFF4CAF50) 
-                        : Colors.grey.shade300,
-                      foregroundColor: gangMethod.value == 'an_gang' 
-                        ? Colors.white 
-                        : Colors.black87,
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Obx(() => ElevatedButton(
+                        onPressed: () {
+                          gangMethod.value = 'an_gang';
+                          gangScore.value = controller.getFansForGangType('an_gang'); // 从配置读取
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: gangMethod.value == 'an_gang' 
+                            ? const Color(0xFF4CAF50) 
+                            : Colors.grey.shade300,
+                          foregroundColor: gangMethod.value == 'an_gang' 
+                            ? Colors.white 
+                            : Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+                          minimumSize: const Size(0, 44),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('an_gang'.tr, style: const TextStyle(fontSize: 13)),
+                        ),
+                      )),
                     ),
-                    child: Text('an_gang'.tr),
-                  )),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Obx(() => ElevatedButton(
-                    onPressed: () {
-                      gangMethod.value = 'dian_gang';
-                      gangScore.value = 2; // 点杠2倍
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: gangMethod.value == 'dian_gang' 
-                        ? const Color(0xFF4CAF50) 
-                        : Colors.grey.shade300,
-                      foregroundColor: gangMethod.value == 'dian_gang' 
-                        ? Colors.white 
-                        : Colors.black87,
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Obx(() => ElevatedButton(
+                        onPressed: () {
+                          gangMethod.value = 'dian_gang';
+                          gangScore.value = controller.getFansForGangType('dian_gang'); // 从配置读取
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: gangMethod.value == 'dian_gang' 
+                            ? const Color(0xFF4CAF50) 
+                            : Colors.grey.shade300,
+                          foregroundColor: gangMethod.value == 'dian_gang' 
+                            ? Colors.white 
+                            : Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+                          minimumSize: const Size(0, 44),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('dian_gang'.tr, style: const TextStyle(fontSize: 13)),
+                        ),
+                      )),
                     ),
-                    child: Text('dian_gang'.tr),
-                  )),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
             
             const SizedBox(height: 16),
@@ -1325,6 +1893,7 @@ class MahjongPage extends BaseView<MahjongController> {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: isSelected ? Colors.red : Colors.grey.shade300,
+                              width: 2, // 固定宽度，避免抖动
                             ),
                           ),
                           child: Text(
@@ -1389,13 +1958,26 @@ class MahjongPage extends BaseView<MahjongController> {
             onPressed: (gangMethod.value.isNotEmpty && 
                        (gangMethod.value != 'dian_gang' || selectedLoser.value != -1))
                 ? () {
-                    // 执行杠牌操作
-                    if (gangMethod.value == 'ming_gang' || gangMethod.value == 'an_gang') {
-                      _confirmGang(controller.selectedPlayer.value, gangMethod.value, gangScore.value);
-                    } else {
-                      _confirmGangPoint(controller.selectedPlayer.value, selectedLoser.value, gangMethod.value, gangScore.value);
-                    }
-                    Navigator.of(Get.context!).pop();
+                    // 保存当前选择的值，因为 Get.back() 后这些值可能丢失
+                    final currentGangMethod = gangMethod.value;
+                    final currentGangScore = gangScore.value;
+                    final currentSelectedLoser = selectedLoser.value;
+                    final currentSelectedPlayer = controller.selectedPlayer.value;
+                    
+                    // 先关闭当前弹窗
+                    Get.back();
+                    
+                    // 使用 Future.microtask 确保在下一帧执行，避免阻塞
+                    Future.microtask(() async {
+                      // 等待弹窗完全关闭后再执行操作
+                      await Future.delayed(const Duration(milliseconds: 150));
+                      // 执行杠牌操作
+                      if (currentGangMethod == 'ming_gang' || currentGangMethod == 'an_gang') {
+                        _confirmGang(currentSelectedPlayer, currentGangMethod, currentGangScore);
+                      } else {
+                        _confirmGangPoint(currentSelectedPlayer, currentSelectedLoser, currentGangMethod, currentGangScore);
+                      }
+                    });
                   }
                 : null,
             child: Text('confirm'.tr),
@@ -1466,6 +2048,25 @@ class MahjongPage extends BaseView<MahjongController> {
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
+    
+    // 延迟播报所有玩家的最终分数，确保弹窗已完全关闭
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final Map<String, int> finalScores = {};
+      for (int i = 0; i < controller.playerNames.length; i++) {
+        finalScores[controller.playerNames[i]] = controller.playerScores[i];
+      }
+      final gangAction = '${controller.playerNames[playerIndex]}${'gang'.tr}';
+      // 构建播报文本：xxx 杠，最终分数 xxx 是：-64分 xxa是 -32分，xxb是 32分 xxc是 64分
+      String announcement = gangAction;
+      announcement += '，${'final_scores'.tr}';
+      final List<String> scoreParts = [];
+      finalScores.forEach((playerName, score) {
+        final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
+        scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
+      });
+      announcement += scoreParts.join('，');
+      controller.voiceAnnouncer.announce(announcement);
+    });
   }
 
   // 确认杠牌（点杠）
@@ -1520,6 +2121,25 @@ class MahjongPage extends BaseView<MahjongController> {
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
+    
+    // 延迟播报所有玩家的最终分数，确保弹窗已完全关闭
+    Future.delayed(const Duration(milliseconds: 300), () {
+      final Map<String, int> finalScores = {};
+      for (int i = 0; i < controller.playerNames.length; i++) {
+        finalScores[controller.playerNames[i]] = controller.playerScores[i];
+      }
+      final gangAction = '${controller.playerNames[playerIndex]}${'gang'.tr}';
+      // 构建播报文本：xxx 杠，最终分数 xxx 是：-64分 xxa是 -32分，xxb是 32分 xxc是 64分
+      String announcement = gangAction;
+      announcement += '，${'final_scores'.tr}';
+      final List<String> scoreParts = [];
+      finalScores.forEach((playerName, score) {
+        final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
+        scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
+      });
+      announcement += scoreParts.join('，');
+      controller.voiceAnnouncer.announce(announcement);
+    });
   }
 
   // 显示设置对话框
@@ -1539,23 +2159,58 @@ class MahjongPage extends BaseView<MahjongController> {
 
   // 显示重置对话框
   void _showResetDialog() {
+    final RxBool resetConfig = false.obs;
+    
     Get.dialog(
-      CustomConfirmDialog(
+      CustomDialog(
         title: 'confirm_reset_mahjong'.tr,
-        content: 'confirm_reset_mahjong_content'.tr,
-        confirmText: 'confirm'.tr,
-        cancelText: 'cancel'.tr,
-        onConfirm: () {
-          controller.resetAllScores();
-          Get.snackbar(
-            'reset_complete_mahjong'.tr,
-            'all_data_reset'.tr,
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: const Color(0xFF4CAF50),
-            colorText: Colors.white,
-            duration: const Duration(seconds: 2),
-          );
-        },
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'confirm_reset_mahjong_content'.tr,
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Obx(() => CheckboxListTile(
+              title: Text('reset_config_to_default'.tr),
+              subtitle: Text('reset_config_to_default_hint'.tr),
+              value: resetConfig.value,
+              onChanged: (value) {
+                resetConfig.value = value ?? false;
+              },
+              controlAffinity: ListTileControlAffinity.leading,
+            )),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('cancel'.tr),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await controller.resetAllScores(resetConfig: resetConfig.value);
+              Get.back();
+              Get.snackbar(
+                'reset_complete_mahjong'.tr,
+                resetConfig.value 
+                  ? 'all_data_and_config_reset'.tr 
+                  : 'all_data_reset'.tr,
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: const Color(0xFF4CAF50),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 2),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              foregroundColor: Colors.white,
+            ),
+            child: Text('confirm'.tr),
+          ),
+        ],
       ),
     );
   }

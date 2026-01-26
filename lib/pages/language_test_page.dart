@@ -137,7 +137,7 @@ class LanguageTestPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text('System Locale: ${WidgetsBinding.instance.window.locale}'),
-                    Text('Platform: ${GetPlatform.isAndroid ? 'Android' : GetPlatform.isIOS ? 'iOS' : GetPlatform.isWeb ? 'Web' : 'Unknown'}'),
+                    Text('Platform: ${GetPlatform.isAndroid ? 'Android' : GetPlatform.isIOS ? 'iOS' : 'Unknown'}'),
                   ],
                 ),
               ),

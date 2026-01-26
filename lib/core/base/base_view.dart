@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:common_ui/common_ui.dart';
 import 'base_controller.dart';
+import '../utils/app_rating_manager.dart';
 
 abstract class BaseView<T extends BaseController> extends GetView<T> {
   const BaseView({super.key});
+  
+  // 记录已经检查过评分的页面路由，避免重复检查
+  static final Set<String> _checkedRoutes = <String>{};
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +54,23 @@ abstract class BaseView<T extends BaseController> extends GetView<T> {
           );
         }
 
-        return buildContent(context);
+        // 在页面构建完成后检查是否需要显示评分
+        final currentRoute = Get.currentRoute;
+        if (_isScoreTrackerPage(currentRoute) && !_checkedRoutes.contains(currentRoute)) {
+          _checkedRoutes.add(currentRoute);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            AppRatingManager.checkAndShowRating(context);
+          });
+        }
+        
+        return GestureDetector(
+          onTap: () {
+            // 点击页面其他地方时收起键盘
+            FocusScope.of(context).unfocus();
+          },
+          behavior: HitTestBehavior.opaque,
+          child: buildContent(context),
+        );
       },
     );
   }
@@ -141,5 +161,26 @@ abstract class BaseView<T extends BaseController> extends GetView<T> {
   /// Navigate and clear stack
   void navigateAndClear(String route, {dynamic arguments}) {
     controller?.navigateAndClear(route, arguments: arguments);
+  }
+  
+  /// 检查是否是计分相关的页面
+  bool _isScoreTrackerPage(String route) {
+    // 计分相关的路由列表
+    const scoreTrackerRoutes = [
+      '/basketball',
+      '/football',
+      '/mahjong',
+      '/doudizhu',
+      '/texas_holdem',
+      '/uno',
+      '/bridge',
+      '/tennis',
+      '/badminton',
+      '/pingpong',
+      '/volleyball',
+      '/custom-score',
+    ];
+    
+    return scoreTrackerRoutes.any((r) => route.startsWith(r));
   }
 } 

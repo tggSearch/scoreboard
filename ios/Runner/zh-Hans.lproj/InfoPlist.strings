@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.strings
+  记分神器
+
+  Created for localization of Info.plist
+*/
+
+CFBundleDisplayName = "记分神器";
+CFBundleName = "记分神器";

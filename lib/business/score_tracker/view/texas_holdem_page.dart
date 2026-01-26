@@ -478,87 +478,96 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
     final chipsController = TextEditingController(text: controller.initialChips.value.toString());
     
     Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          width: 320,
-          decoration: BoxDecoration(
-            color: Colors.white,
+      GestureDetector(
+        onTap: () {
+          // 点击Dialog外部区域时收起键盘
+          FocusScope.of(Get.context!).unfocus();
+        },
+        child: Dialog(
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 标题栏
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF4CAF50),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: GestureDetector(
+            onTap: () {
+              // 阻止点击Dialog内部时关闭Dialog
+            },
+            child: Container(
+              width: 320,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.settings,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'set_initial_chips'.tr,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 标题栏
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF4CAF50),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              // 内容区域
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: TextField(
-                  controller: chipsController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'initial_chips'.tr,
-                    hintText: 'please_enter_initial_chips'.tr,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'set_initial_chips'.tr,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
-                  autofocus: true,
-                ),
-              ),
+                  // 内容区域
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    child: TextField(
+                      controller: chipsController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'initial_chips'.tr,
+                        hintText: 'please_enter_initial_chips'.tr,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      autofocus: true,
+                    ),
+                  ),
               // 按钮区域
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -595,6 +604,8 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
               ),
             ],
           ),
+            ),
+          ),
         ),
       ),
     );
@@ -607,86 +618,95 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
     final nameController = TextEditingController();
     
     Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          width: 320,
-          decoration: BoxDecoration(
-            color: Colors.white,
+      GestureDetector(
+        onTap: () {
+          // 点击Dialog外部区域时收起键盘
+          FocusScope.of(Get.context!).unfocus();
+        },
+        child: Dialog(
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 标题栏
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF4CAF50),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: GestureDetector(
+            onTap: () {
+              // 阻止点击Dialog内部时关闭Dialog
+            },
+            child: Container(
+              width: 320,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.person_add,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'add_player'.tr,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 标题栏
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF4CAF50),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              // 内容区域
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'player_name'.tr,
-                    hintText: 'please_enter_player_name'.tr,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.person_add,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'add_player'.tr,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
-                  autofocus: true,
-                ),
-              ),
+                  // 内容区域
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    child: TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: 'player_name'.tr,
+                        hintText: 'please_enter_player_name'.tr,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      autofocus: true,
+                    ),
+                  ),
               // 按钮区域
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -723,6 +743,8 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
               ),
             ],
           ),
+            ),
+          ),
         ),
       ),
     );
@@ -748,30 +770,39 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
     }
 
     Get.dialog(
-      StatefulBuilder(
-        builder: (context, setState) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            child: Container(
-              width: 320,
-              decoration: BoxDecoration(
-                color: Colors.white,
+      GestureDetector(
+        onTap: () {
+          // 点击Dialog外部区域时收起键盘
+          FocusScope.of(Get.context!).unfocus();
+        },
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              child: GestureDetector(
+                onTap: () {
+                  // 阻止点击Dialog内部时关闭Dialog
+                },
+                child: Container(
+                  width: 320,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                   // 标题栏
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -920,9 +951,11 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                   ),
                 ],
               ),
-            ),
-          );
-        },
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

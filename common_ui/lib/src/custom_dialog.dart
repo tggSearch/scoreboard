@@ -17,63 +17,83 @@ class CustomDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 标题栏
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Color(0xFF4CAF50),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.info_outline,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+    final mediaQuery = MediaQuery.of(context);
+    final availableHeight = mediaQuery.size.height - mediaQuery.viewInsets.bottom - 100; // 留出空间给键盘和边距
+    
+    return GestureDetector(
+      onTap: () {
+        // 点击Dialog外部区域时收起键盘
+        FocusScope.of(context).unfocus();
+      },
+      child: Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: GestureDetector(
+          onTap: () {
+            // 阻止点击Dialog内部时关闭Dialog
+          },
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: 400,
+              maxHeight: availableHeight,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 标题栏
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF4CAF50),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
                     ),
                   ),
-                ],
-              ),
-            ),
-            // 内容区域
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                child: content,
-              ),
-            ),
-            // 按钮区域
-            if (actions != null)
-              Container(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: actions!,
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-          ],
+                // 内容区域
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      child: content,
+                    ),
+                  ),
+                ),
+                // 按钮区域
+                if (actions != null)
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: actions!,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -88,7 +108,7 @@ class CustomDialog extends StatelessWidget {
   }) {
     return showDialog<T>(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (context) => CustomDialog(
         title: title,
         content: content,

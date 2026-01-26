@@ -335,38 +335,47 @@ class FootballPage extends BaseView<FootballController> {
     );
     
     Get.dialog(
-      AlertDialog(
-        title: Text('modify_time'.tr),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
+      GestureDetector(
+        onTap: () {
+          // 点击Dialog外部区域时收起键盘
+          FocusScope.of(Get.context!).unfocus();
+        },
+        child: AlertDialog(
+          title: Text('modify_time'.tr),
+          content: GestureDetector(
+            onTap: () {
+              // 阻止点击Dialog内部时关闭Dialog
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: minutesController,
-                    decoration: InputDecoration(
-                      labelText: 'minutes'.tr,
-                      border: const OutlineInputBorder(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: minutesController,
+                        decoration: InputDecoration(
+                          labelText: 'minutes'.tr,
+                          border: const OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
                     ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                const Text(':', style: TextStyle(fontSize: 24)),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextField(
-                    controller: secondsController,
-                    decoration: InputDecoration(
-                      labelText: 'seconds'.tr,
-                      border: const OutlineInputBorder(),
+                    const SizedBox(width: 16),
+                    const Text(':', style: TextStyle(fontSize: 24)),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        controller: secondsController,
+                        decoration: InputDecoration(
+                          labelText: 'seconds'.tr,
+                          border: const OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
                     ),
-                    keyboardType: TextInputType.number,
-                  ),
+                  ],
                 ),
-              ],
-            ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -383,40 +392,42 @@ class FootballPage extends BaseView<FootballController> {
                   ),
                 ),
               ],
+              ),
+            ],
+          ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: Text('cancel'.tr),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final minutes = int.tryParse(minutesController.text) ?? 0;
+                final seconds = int.tryParse(secondsController.text) ?? 0;
+                final totalSeconds = minutes * 60 + seconds;
+                
+                if (totalSeconds > 0) {
+                  controller.setRemainingTime(totalSeconds);
+                  Get.back();
+                } else {
+                  Get.snackbar(
+                    'input_error'.tr,
+                    'please_enter_valid_time'.tr,
+                    snackPosition: SnackPosition.TOP,
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+              ),
+              child: Text('confirm'.tr),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('cancel'.tr),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final minutes = int.tryParse(minutesController.text) ?? 0;
-              final seconds = int.tryParse(secondsController.text) ?? 0;
-              final totalSeconds = minutes * 60 + seconds;
-              
-              if (totalSeconds > 0) {
-                controller.setRemainingTime(totalSeconds);
-                Get.back();
-              } else {
-                Get.snackbar(
-                  'input_error'.tr,
-                  'please_enter_valid_time'.tr,
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.red,
-                  colorText: Colors.white,
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-              foregroundColor: Colors.white,
-            ),
-            child: Text('confirm'.tr),
-          ),
-        ],
       ),
     );
   }
@@ -697,40 +708,51 @@ class FootballPage extends BaseView<FootballController> {
     final textController = TextEditingController(text: currentName);
     
     Get.dialog(
-      AlertDialog(
-        title: Text('modify_team_name'.tr.replaceAll('{team}', teamNumber == 1 ? 'home_team'.tr : 'away_team'.tr)),
-        content: TextField(
-          controller: textController,
-          decoration: InputDecoration(
-            labelText: 'team_name'.tr,
-            border: const OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('cancel'.tr),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final newName = textController.text.trim();
-              if (newName.isNotEmpty) {
-                if (teamNumber == 1) {
-                  controller.setTeamNames(newName, controller.team2Name);
-                } else {
-                  controller.setTeamNames(controller.team1Name, newName);
-                }
-                Get.back();
-              }
+      GestureDetector(
+        onTap: () {
+          // 点击Dialog外部区域时收起键盘
+          FocusScope.of(Get.context!).unfocus();
+        },
+        child: AlertDialog(
+          title: Text('modify_team_name'.tr.replaceAll('{team}', teamNumber == 1 ? 'home_team'.tr : 'away_team'.tr)),
+          content: GestureDetector(
+            onTap: () {
+              // 阻止点击Dialog内部时关闭Dialog
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-              foregroundColor: Colors.white,
+            child: TextField(
+              controller: textController,
+              decoration: InputDecoration(
+                labelText: 'team_name'.tr,
+                border: const OutlineInputBorder(),
+              ),
+              autofocus: true,
             ),
-            child: Text('confirm'.tr),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: Text('cancel'.tr),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final newName = textController.text.trim();
+                if (newName.isNotEmpty) {
+                  if (teamNumber == 1) {
+                    controller.setTeamNames(newName, controller.team2Name);
+                  } else {
+                    controller.setTeamNames(controller.team1Name, newName);
+                  }
+                  Get.back();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+              ),
+              child: Text('confirm'.tr),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -740,41 +762,52 @@ class FootballPage extends BaseView<FootballController> {
     final textController = TextEditingController(text: currentScore.toString());
     
     Get.dialog(
-      AlertDialog(
-        title: Text('modify_team_score'.tr.replaceAll('{team}', teamName)),
-        content: TextField(
-          controller: textController,
-          decoration: InputDecoration(
-            labelText: 'score'.tr,
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.number,
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('cancel'.tr),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final newScore = int.tryParse(textController.text);
-              if (newScore != null && newScore >= 0) {
-                if (teamNumber == 1) {
-                  controller.addScore(1, newScore - controller.team1Score);
-                } else {
-                  controller.addScore(2, newScore - controller.team2Score);
-                }
-                Get.back();
-              }
+      GestureDetector(
+        onTap: () {
+          // 点击Dialog外部区域时收起键盘
+          FocusScope.of(Get.context!).unfocus();
+        },
+        child: AlertDialog(
+          title: Text('modify_team_score'.tr.replaceAll('{team}', teamName)),
+          content: GestureDetector(
+            onTap: () {
+              // 阻止点击Dialog内部时关闭Dialog
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-              foregroundColor: Colors.white,
+            child: TextField(
+              controller: textController,
+              decoration: InputDecoration(
+                labelText: 'score'.tr,
+                border: const OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+              autofocus: true,
             ),
-            child: Text('confirm'.tr),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: Text('cancel'.tr),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final newScore = int.tryParse(textController.text);
+                if (newScore != null && newScore >= 0) {
+                  if (teamNumber == 1) {
+                    controller.addScore(1, newScore - controller.team1Score);
+                  } else {
+                    controller.addScore(2, newScore - controller.team2Score);
+                  }
+                  Get.back();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+              ),
+              child: Text('confirm'.tr),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -787,26 +820,35 @@ class FootballPage extends BaseView<FootballController> {
     int selectedExtraTime = controller.extraTimeMinutes;
 
     Get.dialog(
-      AlertDialog(
-        title: Text('match_settings'.tr),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: team1Controller,
-              decoration: InputDecoration(
-                labelText: 'home_team_name'.tr,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: team2Controller,
-              decoration: InputDecoration(
-                labelText: 'away_team_name'.tr,
-                border: const OutlineInputBorder(),
-              ),
-            ),
+      GestureDetector(
+        onTap: () {
+          // 点击Dialog外部区域时收起键盘
+          FocusScope.of(Get.context!).unfocus();
+        },
+        child: AlertDialog(
+          title: Text('match_settings'.tr),
+          content: GestureDetector(
+            onTap: () {
+              // 阻止点击Dialog内部时关闭Dialog
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: team1Controller,
+                  decoration: InputDecoration(
+                    labelText: 'home_team_name'.tr,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: team2Controller,
+                  decoration: InputDecoration(
+                    labelText: 'away_team_name'.tr,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -857,27 +899,29 @@ class FootballPage extends BaseView<FootballController> {
                 ),
               ],
             ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: Text('cancel'.tr),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                controller.setTeamNames(team1Controller.text, team2Controller.text);
+                controller.setHalfTime(selectedHalfTime);
+                controller.setExtraTime(selectedExtraTime);
+                Get.back();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+              ),
+              child: Text('save'.tr),
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('cancel'.tr),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              controller.setTeamNames(team1Controller.text, team2Controller.text);
-              controller.setHalfTime(selectedHalfTime);
-              controller.setExtraTime(selectedExtraTime);
-              Get.back();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-              foregroundColor: Colors.white,
-            ),
-            child: Text('save'.tr),
-          ),
-        ],
       ),
     );
   }

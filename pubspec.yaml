@@ -18,6 +18,7 @@ dependencies:
   # Analytics
   fl_umeng: ^4.0.2 
   package_info_plus: ^8.0.2
+  in_app_review: ^2.0.9
   
   # Local packages
   common_utils:
@@ -40,15 +41,3 @@ flutter_launcher_icons:
   ios: true
   image_path: assets/icons/score_board.png
   min_sdk_android: 21
-  web:
-    generate: true
-    image_path: assets/icons/score_board.png
-    background_color: '#hexcode'
-    theme_color: '#hexcode'
-  windows:
-    generate: true
-    image_path: assets/icons/score_board.png
-    icon_size: 48
-  macos:
-    generate: true
-    image_path: assets/icons/score_board.png
