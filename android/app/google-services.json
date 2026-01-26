@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "456333761856",
+    "project_id": "scoreboard-5ad4d",
+    "storage_bucket": "scoreboard-5ad4d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456333761856:android:0be68ffb8d6f8a723caea5",
+        "android_client_info": {
+          "package_name": "com.qualrb.scoreboard"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqTcHARaCryrs-EgLoFaX0leQWl4issJo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
