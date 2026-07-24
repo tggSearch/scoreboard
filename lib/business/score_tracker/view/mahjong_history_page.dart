@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/mahjong_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class MahjongHistoryPage extends BaseView<MahjongController> {
   const MahjongHistoryPage({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text('mahjong_history'.tr),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-      elevation: 0,
+    return AppAppBar(
+      titleText: 'mahjong_history'.tr,
       actions: [
         IconButton(
           onPressed: () {
@@ -29,25 +28,9 @@ class MahjongHistoryPage extends BaseView<MahjongController> {
   Widget buildContent(BuildContext context) {
     return Obx(() {
       if (controller.records.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.history,
-                size: 64,
-                color: Colors.grey,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'no_history_records'.tr,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
+        return AppEmptyState(
+          icon: Icons.history,
+          message: 'no_history_records'.tr,
         );
       }
 
@@ -68,7 +51,11 @@ class MahjongHistoryPage extends BaseView<MahjongController> {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -78,7 +65,7 @@ class MahjongHistoryPage extends BaseView<MahjongController> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: AppColors.primary,
                   radius: 20,
                   child: Text(
                     record.playerName.substring(0, 1),
@@ -144,7 +131,7 @@ class MahjongHistoryPage extends BaseView<MahjongController> {
                       Icon(
                         _getActionIcon(record.description),
                         size: 16,
-                        color: const Color(0xFF4CAF50),
+                        color: AppColors.primary,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -259,7 +246,7 @@ class MahjongHistoryPage extends BaseView<MahjongController> {
                 'clear_history_success'.tr,
                 'all_history_records_cleared'.tr,
                 snackPosition: SnackPosition.TOP,
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.primary,
                 colorText: Colors.white,
                 duration: const Duration(seconds: 2),
               );

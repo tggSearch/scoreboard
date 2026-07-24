@@ -4,17 +4,30 @@ import '../../../core/base/base_view.dart';
 import '../controller/mahjong_controller.dart';
 import '../../../core/utils/mahjong_config.dart';
 import 'package:common_ui/common_ui.dart';
+import '../../../core/theme/app_colors.dart';
 
 class MahjongPage extends BaseView<MahjongController> {
   const MahjongPage({super.key});
+
+  Widget _settingsCard({required List<Widget> children}) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.white,
+        child: Column(children: children),
+      ),
+    );
+  }
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
     return AppBar(
       title: Text('mahjong_scoring'.tr),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-      elevation: 0,
+      
       actions: [
         // 语音开关
         Obx(() => IconButton(
@@ -150,7 +163,7 @@ class MahjongPage extends BaseView<MahjongController> {
               decoration: BoxDecoration(
                 color: const Color(0xFF8BC34A),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF4CAF50), width: 3),
+                border: Border.all(color: AppColors.primary, width: 3),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.withOpacity(0.3),
@@ -185,9 +198,9 @@ class MahjongPage extends BaseView<MahjongController> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50).withOpacity(0.2),
+                        color: AppColors.primary.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(40),
-                        border: Border.all(color: const Color(0xFF4CAF50), width: 2),
+                        border: Border.all(color: AppColors.primary, width: 2),
                       ),
                       child: const Center(
                         child: Icon(
@@ -203,7 +216,7 @@ class MahjongPage extends BaseView<MahjongController> {
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF4CAF50), width: 2),
+                        border: Border.all(color: AppColors.primary, width: 2),
                       ),
                     ),
                   ),
@@ -343,10 +356,10 @@ class MahjongPage extends BaseView<MahjongController> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: playerScore >= 0 ? const Color(0xFF4CAF50).withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                  color: playerScore >= 0 ? AppColors.primary.withOpacity(0.1) : Colors.red.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(
-                    color: playerScore >= 0 ? const Color(0xFF4CAF50) : Colors.red,
+                    color: playerScore >= 0 ? AppColors.primary : Colors.red,
                     width: 1,
                   ),
                 ),
@@ -355,7 +368,7 @@ class MahjongPage extends BaseView<MahjongController> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: playerScore >= 0 ? const Color(0xFF4CAF50) : Colors.red,
+                    color: playerScore >= 0 ? AppColors.primary : Colors.red,
                   ),
                 ),
               ),
@@ -386,7 +399,7 @@ class MahjongPage extends BaseView<MahjongController> {
             height: 28,
             decoration: BoxDecoration(
               color: controller.baseScore.value > 1 
-                  ? const Color(0xFF4CAF50)
+                  ? AppColors.primary
                   : Colors.grey.shade300,
               borderRadius: BorderRadius.circular(4),
             ),
@@ -427,7 +440,7 @@ class MahjongPage extends BaseView<MahjongController> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
-                  borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 1),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 1),
                 ),
               ),
               onChanged: (value) {
@@ -441,7 +454,7 @@ class MahjongPage extends BaseView<MahjongController> {
                   controller.baseScore.value = 1;
                 }
                 // 完成编辑后取消焦点
-                FocusScope.of(Get.context!).unfocus();
+                KeyboardDismiss.dismiss();
               },
             );
           }),
@@ -456,7 +469,7 @@ class MahjongPage extends BaseView<MahjongController> {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50),
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(4),
             ),
             child: const Icon(
@@ -632,9 +645,9 @@ class MahjongPage extends BaseView<MahjongController> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           // 先取消焦点，避免焦点转移到其他输入框
-                          FocusScope.of(Get.context!).unfocus();
+                          KeyboardDismiss.dismiss();
                           // 先关闭当前弹窗
-                          Get.back();
+                          DialogNavigator.close();
                           // 使用 Future.microtask 确保在下一帧执行，让对话框完全关闭
                           Future.microtask(() {
                             _showWinDialog();
@@ -661,9 +674,9 @@ class MahjongPage extends BaseView<MahjongController> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           // 先取消焦点，避免焦点转移到其他输入框
-                          FocusScope.of(Get.context!).unfocus();
+                          KeyboardDismiss.dismiss();
                           // 先关闭当前弹窗
-                          Get.back();
+                          DialogNavigator.close();
                           // 使用 Future.microtask 确保在下一帧执行，让对话框完全关闭
                           Future.microtask(() {
                             _showGangDialog();
@@ -705,7 +718,7 @@ class MahjongPage extends BaseView<MahjongController> {
                 ),
                 IconButton(
                   onPressed: () {
-                    Get.back();
+                    DialogNavigator.close();
                     _showPlayerNameEditDialog(playerIndex, currentName);
                   },
                   icon: Icon(Icons.edit, size: 16, color: Colors.grey[600]),
@@ -726,7 +739,7 @@ class MahjongPage extends BaseView<MahjongController> {
                 ),
                 IconButton(
                   onPressed: () {
-                    Get.back();
+                    DialogNavigator.close();
                     _showPlayerScoreEditDialog(playerIndex, currentName, currentScore);
                   },
                   icon: Icon(Icons.edit, size: 16, color: Colors.grey[600]),
@@ -739,7 +752,7 @@ class MahjongPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('cancel'.tr),
           ),
         ],
@@ -761,7 +774,7 @@ class MahjongPage extends BaseView<MahjongController> {
               'manual_modify_success'.tr,
               'manual_score_update'.tr,
               snackPosition: SnackPosition.TOP,
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               colorText: Colors.white,
               duration: const Duration(seconds: 2),
             );
@@ -843,7 +856,7 @@ class MahjongPage extends BaseView<MahjongController> {
               'fans_config_save_success'.tr,
               '${controller.selectedWinType.value.tr}的${winMethod.tr}番数已更新',
               snackPosition: SnackPosition.TOP,
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               colorText: Colors.white,
               duration: const Duration(seconds: 2),
             );
@@ -884,7 +897,7 @@ class MahjongPage extends BaseView<MahjongController> {
               'fans_config_save_success'.tr,
               '${gangMethod}番数已更新为${newScore}番',
               snackPosition: SnackPosition.TOP,
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               colorText: Colors.white,
               duration: const Duration(seconds: 2),
             );
@@ -924,7 +937,7 @@ class MahjongPage extends BaseView<MahjongController> {
       '✅ 修改成功',
       '玩家分数已更新',
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
@@ -960,26 +973,26 @@ class MahjongPage extends BaseView<MahjongController> {
                             final fans = await controller.getFansForWinTypePointPao(type);
                             controller.selectedFans.value = fans;
                           }
-                          Get.back();
+                          DialogNavigator.close();
                         },
                         child: Container(
                           width: itemWidth,
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                           decoration: BoxDecoration(
                             color: isSelected 
-                                ? const Color(0xFF4CAF50)
+                                ? AppColors.primary
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: isSelected 
-                                  ? const Color(0xFF4CAF50)
+                                  ? AppColors.primary
                                   : Colors.grey.shade300,
                               width: isSelected ? 2 : 1,
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                      color: AppColors.primary.withOpacity(0.3),
                                       blurRadius: 6,
                                       offset: const Offset(0, 3),
                                     ),
@@ -1035,7 +1048,7 @@ class MahjongPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('cancel'.tr),
           ),
         ],
@@ -1101,7 +1114,7 @@ class MahjongPage extends BaseView<MahjongController> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: winMethod.value == 'self_draw' 
-                            ? const Color(0xFF4CAF50) 
+                            ? AppColors.primary 
                             : Colors.grey.shade200,
                           foregroundColor: winMethod.value == 'self_draw' 
                             ? Colors.white 
@@ -1130,7 +1143,7 @@ class MahjongPage extends BaseView<MahjongController> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: winMethod.value == 'point_pao' 
-                            ? const Color(0xFF4CAF50) 
+                            ? AppColors.primary 
                             : Colors.grey.shade200,
                           foregroundColor: winMethod.value == 'point_pao' 
                             ? Colors.white 
@@ -1178,10 +1191,10 @@ class MahjongPage extends BaseView<MahjongController> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade100,
+                            color: isSelected ? AppColors.primary : Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                              color: isSelected ? AppColors.primary : Colors.grey.shade300,
                               width: 2,
                             ),
                           ),
@@ -1215,18 +1228,12 @@ class MahjongPage extends BaseView<MahjongController> {
                   const SizedBox(height: 8),
                   
                   // 使用卡片式设计，统一主题色
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200, width: 1),
-                    ),
-                    child: Column(
-                      children: [
+                  _settingsCard(
+                    children: [
                         // 胡牌类型选择
                         Obx(() => ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          leading: Icon(Icons.casino, color: const Color(0xFF4CAF50), size: 20),
+                          leading: Icon(Icons.casino, color: AppColors.primary, size: 20),
                           title: Text(
                             controller.selectedWinType.value.tr,
                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
@@ -1242,7 +1249,7 @@ class MahjongPage extends BaseView<MahjongController> {
                         // 番数显示和修改
                         Obx(() => ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          leading: Icon(Icons.star, color: const Color(0xFF4CAF50), size: 20),
+                          leading: Icon(Icons.star, color: AppColors.primary, size: 20),
                           title: Text(
                             '${'fans'.tr}: ${controller.selectedFans.value}',
                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
@@ -1251,7 +1258,7 @@ class MahjongPage extends BaseView<MahjongController> {
                             onPressed: () {
                               _showFansEditDialog(winMethod.value);
                             },
-                            icon: Icon(Icons.edit, size: 18, color: const Color(0xFF4CAF50)),
+                            icon: Icon(Icons.edit, size: 18, color: AppColors.primary),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             tooltip: 'modify_fans'.tr,
@@ -1272,18 +1279,17 @@ class MahjongPage extends BaseView<MahjongController> {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
-                              color: gangShangKaiHua.value ? const Color(0xFF4CAF50) : Colors.black87,
+                              color: gangShangKaiHua.value ? AppColors.primary : Colors.black87,
                             ),
                           ),
                           subtitle: Text(
                             'gang_shang_kai_hua_hint'.tr,
                             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                           ),
-                          activeColor: const Color(0xFF4CAF50),
+                          activeColor: AppColors.primary,
                           controlAffinity: ListTileControlAffinity.leading,
                         )),
                       ],
-                    ),
                   ),
                   
                   const SizedBox(height: 8),
@@ -1295,15 +1301,11 @@ class MahjongPage extends BaseView<MahjongController> {
                     // 如果使用过，默认展开；否则显示展开箭头
                     if (!zhuamaUsedBefore.value && !zhuamaExpanded.value) {
                       // 未使用过且未展开：显示展开箭头
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade200, width: 1),
-                        ),
-                        child: ListTile(
+                      return _settingsCard(
+                        children: [
+                          ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          leading: Icon(Icons.casino, color: const Color(0xFF4CAF50), size: 20),
+                          leading: Icon(Icons.casino, color: AppColors.primary, size: 20),
                           title: Text(
                             'zhuama'.tr,
                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
@@ -1315,22 +1317,17 @@ class MahjongPage extends BaseView<MahjongController> {
                             MahjongConfig.setZhuamaExpanded(true);
                           },
                         ),
+                        ],
                       );
                     }
                     
                     // 展开状态：显示快速选择和自定义输入
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200, width: 1),
-                      ),
-                      child: Column(
-                        children: [
+                    return _settingsCard(
+                      children: [
                           // 标题和收起按钮
                           ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            leading: Icon(Icons.casino, color: const Color(0xFF4CAF50), size: 20),
+                            leading: Icon(Icons.casino, color: AppColors.primary, size: 20),
                             title: Row(
                               children: [
                                 Text(
@@ -1342,14 +1339,14 @@ class MahjongPage extends BaseView<MahjongController> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                      color: AppColors.primary.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
                                       '${zhuamaFans.value}',
                                       style: const TextStyle(
                                         fontSize: 13,
-                                        color: Color(0xFF4CAF50),
+                                        color: AppColors.primary,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -1396,10 +1393,10 @@ class MahjongPage extends BaseView<MahjongController> {
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                           decoration: BoxDecoration(
-                                            color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade100,
+                                            color: isSelected ? AppColors.primary : Colors.grey.shade100,
                                             borderRadius: BorderRadius.circular(20),
                                             border: Border.all(
-                                              color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                                              color: isSelected ? AppColors.primary : Colors.grey.shade300,
                                               width: 2,
                                             ),
                                           ),
@@ -1441,7 +1438,7 @@ class MahjongPage extends BaseView<MahjongController> {
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(8),
-                                          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
                                         ),
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                         isDense: true,
@@ -1475,7 +1472,6 @@ class MahjongPage extends BaseView<MahjongController> {
                             ),
                           ],
                         ],
-                      ),
                     );
                   }),
                   
@@ -1492,7 +1488,7 @@ class MahjongPage extends BaseView<MahjongController> {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50),
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -1539,8 +1535,8 @@ class MahjongPage extends BaseView<MahjongController> {
           TextButton(
             onPressed: () {
               // 取消焦点，避免焦点转移到其他输入框
-              FocusScope.of(Get.context!).unfocus();
-              Get.back();
+              KeyboardDismiss.dismiss();
+              DialogNavigator.close();
             },
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -1557,7 +1553,7 @@ class MahjongPage extends BaseView<MahjongController> {
               onPressed: canConfirm
                   ? () {
                       // 先关闭当前弹窗
-                      Get.back();
+                      DialogNavigator.close();
                       // 如果使用了抓码，标记为已使用
                       if (zhuamaFans.value > 0) {
                         MahjongConfig.markZhuamaUsed();
@@ -1578,7 +1574,7 @@ class MahjongPage extends BaseView<MahjongController> {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 shape: RoundedRectangleBorder(
@@ -1595,7 +1591,7 @@ class MahjongPage extends BaseView<MahjongController> {
       // 对话框关闭时清理资源和取消焦点
       zhuamaCustomController.dispose();
       // 取消焦点，避免焦点自动转移到其他输入框
-      FocusScope.of(Get.context!).unfocus();
+      KeyboardDismiss.dismiss();
     });
   }
 
@@ -1664,7 +1660,7 @@ class MahjongPage extends BaseView<MahjongController> {
       'self_draw_success'.tr,
       'self_draw_announce'.tr.replaceAll('{player}', controller.playerNames[winnerIndex]).replaceAll('{score}', (totalScore * 3).toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
@@ -1678,13 +1674,13 @@ class MahjongPage extends BaseView<MahjongController> {
       final winAction = '${controller.playerNames[winnerIndex]}${'win_game'.tr}';
       // 构建播报文本：xxx 胡牌，最终分数 xxx 是：-64分 xxa是 -32分，xxb是 32分 xxc是 64分
       String announcement = winAction;
-      announcement += '，${'final_scores'.tr}';
+      announcement += '${'comma_separator'.tr}${'final_scores'.tr}';
       final List<String> scoreParts = [];
       finalScores.forEach((playerName, score) {
         final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
         scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
       });
-      announcement += scoreParts.join('，');
+      announcement += scoreParts.join('comma_separator'.tr);
       controller.voiceAnnouncer.announce(announcement);
     });
   }
@@ -1744,7 +1740,7 @@ class MahjongPage extends BaseView<MahjongController> {
       'point_pao_success'.tr,
       'point_pao_announce'.tr.replaceAll('{winner}', controller.playerNames[winnerIndex]).replaceAll('{loser}', controller.playerNames[loserIndex]).replaceAll('{score}', totalScore.toString()).replaceAll('{zhuama_text}', zhuamaFans > 0 ? 'with_zhuama'.tr.replaceAll('{zhuama}', zhuamaFans.toString()) : ''),
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
@@ -1758,13 +1754,13 @@ class MahjongPage extends BaseView<MahjongController> {
       final winAction = '${controller.playerNames[winnerIndex]}${'win_game'.tr}';
       // 构建播报文本：xxx 胡牌，最终分数 xxx 是：-64分 xxa是 -32分，xxb是 32分 xxc是 64分
       String announcement = winAction;
-      announcement += '，${'final_scores'.tr}';
+      announcement += '${'comma_separator'.tr}${'final_scores'.tr}';
       final List<String> scoreParts = [];
       finalScores.forEach((playerName, score) {
         final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
         scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
       });
-      announcement += scoreParts.join('，');
+      announcement += scoreParts.join('comma_separator'.tr);
       controller.voiceAnnouncer.announce(announcement);
     });
   }
@@ -1799,7 +1795,7 @@ class MahjongPage extends BaseView<MahjongController> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: gangMethod.value == 'ming_gang' 
-                            ? const Color(0xFF4CAF50) 
+                            ? AppColors.primary 
                             : Colors.grey.shade300,
                           foregroundColor: gangMethod.value == 'ming_gang' 
                             ? Colors.white 
@@ -1822,7 +1818,7 @@ class MahjongPage extends BaseView<MahjongController> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: gangMethod.value == 'an_gang' 
-                            ? const Color(0xFF4CAF50) 
+                            ? AppColors.primary 
                             : Colors.grey.shade300,
                           foregroundColor: gangMethod.value == 'an_gang' 
                             ? Colors.white 
@@ -1845,7 +1841,7 @@ class MahjongPage extends BaseView<MahjongController> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: gangMethod.value == 'dian_gang' 
-                            ? const Color(0xFF4CAF50) 
+                            ? AppColors.primary 
                             : Colors.grey.shade300,
                           foregroundColor: gangMethod.value == 'dian_gang' 
                             ? Colors.white 
@@ -1951,21 +1947,21 @@ class MahjongPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('cancel'.tr),
           ),
           Obx(() => ElevatedButton(
             onPressed: (gangMethod.value.isNotEmpty && 
                        (gangMethod.value != 'dian_gang' || selectedLoser.value != -1))
                 ? () {
-                    // 保存当前选择的值，因为 Get.back() 后这些值可能丢失
+                    // 保存当前选择的值，因为关闭弹窗后这些值可能丢失
                     final currentGangMethod = gangMethod.value;
                     final currentGangScore = gangScore.value;
                     final currentSelectedLoser = selectedLoser.value;
                     final currentSelectedPlayer = controller.selectedPlayer.value;
                     
                     // 先关闭当前弹窗
-                    Get.back();
+                    DialogNavigator.close();
                     
                     // 使用 Future.microtask 确保在下一帧执行，避免阻塞
                     Future.microtask(() async {
@@ -2044,7 +2040,7 @@ class MahjongPage extends BaseView<MahjongController> {
       'gang_success'.tr,
       'gang_announce'.tr.replaceAll('{player}', controller.playerNames[playerIndex]).replaceAll('{gang_type}', gangMethod).replaceAll('{score}', (totalScore * 3).toString()),
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
@@ -2058,13 +2054,13 @@ class MahjongPage extends BaseView<MahjongController> {
       final gangAction = '${controller.playerNames[playerIndex]}${'gang'.tr}';
       // 构建播报文本：xxx 杠，最终分数 xxx 是：-64分 xxa是 -32分，xxb是 32分 xxc是 64分
       String announcement = gangAction;
-      announcement += '，${'final_scores'.tr}';
+      announcement += '${'comma_separator'.tr}${'final_scores'.tr}';
       final List<String> scoreParts = [];
       finalScores.forEach((playerName, score) {
         final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
         scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
       });
-      announcement += scoreParts.join('，');
+      announcement += scoreParts.join('comma_separator'.tr);
       controller.voiceAnnouncer.announce(announcement);
     });
   }
@@ -2117,7 +2113,7 @@ class MahjongPage extends BaseView<MahjongController> {
       'gang_point_success'.tr,
       'gang_point_announce'.tr.replaceAll('{player}', controller.playerNames[playerIndex]).replaceAll('{loser}', controller.playerNames[loserIndex]).replaceAll('{score}', totalScore.toString()),
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );
@@ -2131,13 +2127,13 @@ class MahjongPage extends BaseView<MahjongController> {
       final gangAction = '${controller.playerNames[playerIndex]}${'gang'.tr}';
       // 构建播报文本：xxx 杠，最终分数 xxx 是：-64分 xxa是 -32分，xxb是 32分 xxc是 64分
       String announcement = gangAction;
-      announcement += '，${'final_scores'.tr}';
+      announcement += '${'comma_separator'.tr}${'final_scores'.tr}';
       final List<String> scoreParts = [];
       finalScores.forEach((playerName, score) {
         final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
         scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
       });
-      announcement += scoreParts.join('，');
+      announcement += scoreParts.join('comma_separator'.tr);
       controller.voiceAnnouncer.announce(announcement);
     });
   }
@@ -2151,7 +2147,7 @@ class MahjongPage extends BaseView<MahjongController> {
         confirmText: 'confirm'.tr,
         cancelText: 'cancel'.tr,
         onConfirm: () {
-          Get.back();
+          DialogNavigator.close();
         },
       ),
     );
@@ -2186,26 +2182,27 @@ class MahjongPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('cancel'.tr),
           ),
           ElevatedButton(
             onPressed: () async {
               await controller.resetAllScores(resetConfig: resetConfig.value);
-              Get.back();
-              Get.snackbar(
-                'reset_complete_mahjong'.tr,
-                resetConfig.value 
-                  ? 'all_data_and_config_reset'.tr 
-                  : 'all_data_reset'.tr,
-                snackPosition: SnackPosition.TOP,
-                backgroundColor: const Color(0xFF4CAF50),
-                colorText: Colors.white,
-                duration: const Duration(seconds: 2),
-              );
+              DialogNavigator.closeThen(() {
+                Get.snackbar(
+                  'reset_complete_mahjong'.tr,
+                  resetConfig.value 
+                    ? 'all_data_and_config_reset'.tr 
+                    : 'all_data_reset'.tr,
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: AppColors.primary,
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 2),
+                );
+              });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
             child: Text('confirm'.tr),
@@ -2223,9 +2220,7 @@ class MahjongPage extends BaseView<MahjongController> {
         content: 'game_records_content'.tr,
         confirmText: 'confirm'.tr,
         cancelText: 'cancel'.tr,
-        onConfirm: () {
-          Get.back();
-        },
+        onConfirm: () {},
       ),
     );
   }
@@ -2275,7 +2270,7 @@ class MahjongPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('cancel'.tr),
           ),
           ElevatedButton(
@@ -2292,15 +2287,16 @@ class MahjongPage extends BaseView<MahjongController> {
                   controller.selectedFans.value,
                 );
               }
-              Get.back();
-              Get.snackbar(
-                'fans_config_save_success'.tr,
-                'fans_config_saved'.tr,
-                snackPosition: SnackPosition.TOP,
-                backgroundColor: const Color(0xFF4CAF50),
-                colorText: Colors.white,
-                duration: const Duration(seconds: 2),
-              );
+              DialogNavigator.closeThen(() {
+                Get.snackbar(
+                  'fans_config_save_success'.tr,
+                  'fans_config_saved'.tr,
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: AppColors.primary,
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 2),
+                );
+              });
             },
             child: Text('save'.tr),
           ),
@@ -2330,15 +2326,16 @@ class MahjongPage extends BaseView<MahjongController> {
                     controller.selectedWinType.value,
                     fans,
                   );
-                  Get.back();
-                  Get.snackbar(
-                    'fans_set_success'.tr,
-                    'fans_set_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{fans}', fans.toString()),
-                    snackPosition: SnackPosition.TOP,
-                    backgroundColor: const Color(0xFF4CAF50),
-                    colorText: Colors.white,
-                    duration: const Duration(seconds: 2),
-                  );
+                  DialogNavigator.closeThen(() {
+                    Get.snackbar(
+                      'fans_set_success'.tr,
+                      'fans_set_description'.tr.replaceAll('{win_type}', controller.selectedWinType.value.tr).replaceAll('{fans}', fans.toString()),
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: AppColors.primary,
+                      colorText: Colors.white,
+                      duration: const Duration(seconds: 2),
+                    );
+                  });
                 },
               );
             },
@@ -2346,7 +2343,7 @@ class MahjongPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('cancel'.tr),
           ),
         ],
@@ -2433,14 +2430,14 @@ class MahjongPage extends BaseView<MahjongController> {
                                 padding: const EdgeInsets.symmetric(vertical: 4),
                                 decoration: BoxDecoration(
                                   color: isSelected 
-                                    ? const Color(0xFF4CAF50) 
+                                    ? AppColors.primary 
                                     : isOccupied 
                                       ? Colors.red.shade100 
                                       : Colors.white,
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
                                     color: isSelected 
-                                      ? const Color(0xFF4CAF50) 
+                                      ? AppColors.primary 
                                       : isOccupied 
                                         ? Colors.red 
                                         : Colors.grey.shade300,
@@ -2488,7 +2485,7 @@ class MahjongPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('cancel'.tr),
           ),
           ElevatedButton(
@@ -2523,15 +2520,16 @@ class MahjongPage extends BaseView<MahjongController> {
               
               // 执行位置切换
               controller.switchPlayerPositionsFlexible(newPositions);
-              Get.back();
-              Get.snackbar(
-                'position_switch_success'.tr,
-                'position_switch_complete'.tr,
-                snackPosition: SnackPosition.TOP,
-                backgroundColor: const Color(0xFF4CAF50),
-                colorText: Colors.white,
-                duration: const Duration(seconds: 2),
-              );
+              DialogNavigator.closeThen(() {
+                Get.snackbar(
+                  'position_switch_success'.tr,
+                  'position_switch_complete'.tr,
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: AppColors.primary,
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 2),
+                );
+              });
             },
             child: Text('save'.tr),
           ),
@@ -2553,7 +2551,7 @@ class MahjongPage extends BaseView<MahjongController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 自摸番数配置
-                Text('self_draw_fans_config'.tr, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF4CAF50))),
+                Text('self_draw_fans_config'.tr, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 const SizedBox(height: 8),
                 ...controller.winTypes.map((winType) => _buildFansConfigItem(winType, 'win_selfdraw')).toList(),
                 
@@ -2586,23 +2584,24 @@ class MahjongPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('取消'),
+            onPressed: () => DialogNavigator.close(),
+            child: Text('cancel'.tr),
           ),
           ElevatedButton(
             onPressed: () async {
               await controller.saveAllFansConfig();
-              Get.back();
-              Get.snackbar(
-                '✅ 保存成功',
-                '番数配置已保存',
-                snackPosition: SnackPosition.TOP,
-                backgroundColor: const Color(0xFF4CAF50),
-                colorText: Colors.white,
-                duration: const Duration(seconds: 2),
-              );
+              DialogNavigator.closeThen(() {
+                Get.snackbar(
+                  'save_success'.tr,
+                  'fans_config_saved'.tr,
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: AppColors.primary,
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 2),
+                );
+              });
             },
-            child: const Text('保存'),
+            child: Text('save'.tr),
           ),
         ],
       ),

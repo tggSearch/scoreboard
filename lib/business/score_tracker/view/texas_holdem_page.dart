@@ -1,174 +1,109 @@
 import 'package:flutter/material.dart';
+import 'package:common_ui/common_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/texas_holdem_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class TexasHoldemPage extends BaseView<TexasHoldemController> {
   const TexasHoldemPage({super.key});
 
   @override
   Widget buildContent(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF4CAF50),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF4CAF50),
-        elevation: 0,
-        title: Text(
-          'texas_holdem'.tr,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+    return AppGameSheet(
+      appBar: AppAppBar(
+        titleText: 'texas_holdem'.tr,
         actions: [
-          // 语音开关
           Obx(() => IconButton(
             icon: Icon(
               controller.voiceAnnouncer.isEnabled.value
-                  ? Icons.volume_up
-                  : Icons.volume_off,
+                  ? Icons.volume_up_rounded
+                  : Icons.volume_off_rounded,
               color: Colors.white,
             ),
             onPressed: () => controller.voiceAnnouncer.toggle(),
           )),
-          // 历史记录
           IconButton(
-            icon: const Icon(Icons.history, color: Colors.white),
+            icon: const Icon(Icons.history_rounded, color: Colors.white),
             onPressed: () => Get.toNamed('/texas-holdem-history'),
           ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // 初始筹码设置
-              _buildInitialChipsSection(),
-              const SizedBox(height: 12),
-              
-              // 玩家积分列表
-              Expanded(child: _buildPlayerScoresList()),
-              const SizedBox(height: 12),
-              
-              // 操作按钮
-              _buildOperationButtons(),
-            ],
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildInitialChipsSection(),
+            const SizedBox(height: 12),
+            Expanded(child: _buildPlayerScoresList()),
+          ],
         ),
       ),
+      bottomBar: _buildOperationButtons(),
     );
   }
 
   Widget _buildInitialChipsSection() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
+    return AppSectionCard(
+      title: 'initial_chips'.tr,
+      titleTrailing: AppButton(
+        label: 'modify'.tr,
+        compact: true,
+        onPressed: () => _showInitialChipsDialog(),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'initial_chips'.tr,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Obx(() => Text(
-                  '${controller.initialChips.value}${'points'.tr}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                )),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => _showInitialChipsDialog(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              minimumSize: const Size(0, 32),
-            ),
-            child: Text('modify'.tr, style: const TextStyle(fontSize: 12)),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+      child: Obx(() => Text(
+        '${controller.initialChips.value}${'points'.tr}',
+        style: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: UiColors.textPrimary,
+        ),
+      )),
     );
   }
 
   Widget _buildPlayerScoresList() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
+        color: UiColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(UiRadius.lg),
+        border: Border.all(color: UiColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'player_count'.tr,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    'player_count'.tr,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: UiColors.textPrimary,
+                    ),
                   ),
                 ),
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
-                    TextButton.icon(
+                    AppActionChip.add(
+                      label: 'add'.tr,
                       onPressed: () => _showAddPlayerDialog(),
-                      icon: const Icon(Icons.add, size: 14),
-                      label: Text('add'.tr, style: const TextStyle(fontSize: 12)),
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF4CAF50),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        minimumSize: const Size(0, 24),
-                      ),
                     ),
-                    TextButton.icon(
+                    AppActionChip.delete(
+                      label: 'delete'.tr,
                       onPressed: () => _toggleDeleteMode(),
-                      icon: const Icon(Icons.delete, size: 14),
-                      label: Text('delete'.tr, style: const TextStyle(fontSize: 12)),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        minimumSize: const Size(0, 24),
-                      ),
                     ),
-                    TextButton.icon(
+                    AppActionChip.reset(
+                      label: 'reset'.tr,
                       onPressed: () => _showResetScoresDialog(),
-                      icon: const Icon(Icons.refresh, size: 14),
-                      label: Text('reset'.tr, style: const TextStyle(fontSize: 12)),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.orange,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        minimumSize: const Size(0, 24),
-                      ),
                     ),
                   ],
                 ),
@@ -177,11 +112,11 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
           ),
           Expanded(
             child: Obx(() => ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               itemCount: controller.players.length,
               itemBuilder: (context, index) {
-                final player = controller.players[index];
-                return _buildPlayerScoreItem(player);
+                return _buildPlayerScoreItem(controller.players[index]);
               },
             )),
           ),
@@ -191,125 +126,105 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
   }
 
   Widget _buildPlayerScoreItem(String player) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey[200]!),
+    return AppPlayerCard(
+      leading: CircleAvatar(
+        radius: 18,
+        backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+        child: Text(
+          player.isNotEmpty ? player[0] : '?',
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
       ),
-      child: Row(
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  player,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Obx(() => Text(
-                      '${'times'.tr}: ${controller.playerScores[player] ?? 1}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    )),
-                    const SizedBox(width: 8),
-                    Obx(() => Text(
-                      '${'initial_chips'.tr}: ${(controller.playerScores[player] ?? 1) * controller.initialChips.value}${'points'.tr}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
-                      ),
-                    )),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Obx(() {
-                  final finalChips = controller.playerFinalChips[player];
-                  if (finalChips != null) {
-                    final initialChips = (controller.playerScores[player] ?? 1) * controller.initialChips.value;
-                    final winLoss = finalChips - initialChips;
-                    final winLossColor = winLoss >= 0 ? Colors.green : Colors.red;
-                    final winLossText = winLoss >= 0 ? '+$winLoss' : '$winLoss';
-                    
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'remaining_chips'.tr + ': ${finalChips}' + 'points'.tr,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.blue[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'win_loss'.tr + ': $winLossText' + 'points'.tr,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: winLossColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    );
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                }),
-              ],
+          Text(
+            player,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: UiColors.textPrimary,
             ),
           ),
+          const SizedBox(height: 4),
           Row(
             children: [
-              IconButton(
-                onPressed: () {
-                  controller.exitDeleteMode();
-                  controller.adjustPlayerScore(player, -1);
-                },
-                icon: const Icon(Icons.remove_circle_outline),
-                color: Colors.red,
-                iconSize: 20,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              ),
-              IconButton(
-                onPressed: () {
-                  controller.exitDeleteMode();
-                  controller.adjustPlayerScore(player, 1);
-                },
-                icon: const Icon(Icons.add_circle_outline),
-                color: Colors.green,
-                iconSize: 20,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              ),
-              // 删除按钮 - 只在删除模式下显示
-              Obx(() => controller.isDeleteMode.value ? IconButton(
-                onPressed: () => _showDeletePlayerDialog(player),
-                icon: const Icon(Icons.delete_forever),
-                color: Colors.red,
-                iconSize: 20,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              ) : const SizedBox.shrink()),
+              Obx(() => Text(
+                '${'times'.tr}: ${controller.playerScores[player] ?? 1}',
+                style: const TextStyle(fontSize: 12, color: UiColors.textSecondary),
+              )),
+              const SizedBox(width: 8),
+              Obx(() => Text(
+                '${'initial_chips'.tr}: ${(controller.playerScores[player] ?? 1) * controller.initialChips.value}${'points'.tr}',
+                style: const TextStyle(fontSize: 12, color: UiColors.textMuted),
+              )),
             ],
           ),
+          const SizedBox(height: 2),
+          Obx(() {
+            final finalChips = controller.playerFinalChips[player];
+            if (finalChips != null) {
+              final initialChips = (controller.playerScores[player] ?? 1) * controller.initialChips.value;
+              final winLoss = finalChips - initialChips;
+              final winLossColor = winLoss >= 0 ? AppColors.success : AppColors.error;
+              final winLossText = winLoss >= 0 ? '+$winLoss' : '$winLoss';
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${'remaining_chips'.tr}: $finalChips${'points'.tr}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.info,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${'win_loss'.tr}: $winLossText${'points'.tr}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: winLossColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          }),
         ],
       ),
+      actions: [
+        AppStepButton.minus(
+          onPressed: () {
+            controller.exitDeleteMode();
+            controller.adjustPlayerScore(player, -1);
+          },
+        ),
+        const SizedBox(width: 6),
+        AppStepButton.plus(
+          onPressed: () {
+            controller.exitDeleteMode();
+            controller.adjustPlayerScore(player, 1);
+          },
+        ),
+        Obx(() => controller.isDeleteMode.value
+            ? Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: AppStepButton(
+                  icon: Icons.delete_outline_rounded,
+                  isIncrement: false,
+                  onPressed: () => _showDeletePlayerDialog(player),
+                ),
+              )
+            : const SizedBox.shrink()),
+      ],
     );
   }
 
@@ -317,34 +232,21 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
     return Row(
       children: [
         Expanded(
-          child: ElevatedButton.icon(
+          child: AppButton(
+            label: 'input_chips'.tr,
+            icon: Icons.assessment_outlined,
+            expanded: true,
             onPressed: () => _showFinalSettlementDialog(),
-            icon: const Icon(Icons.assessment, size: 16),
-            label: Text('input_chips'.tr, style: const TextStyle(fontSize: 12)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
         Expanded(
-          child: ElevatedButton.icon(
+          child: AppButton(
+            label: 'game_statistics'.tr,
+            icon: Icons.analytics_outlined,
+            variant: AppButtonVariant.warning,
+            expanded: true,
             onPressed: () => _showSettlementReportDialog(),
-            icon: const Icon(Icons.analytics, size: 16),
-            label: Text('game_statistics'.tr, style: const TextStyle(fontSize: 12)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
           ),
         ),
       ],
@@ -383,7 +285,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
@@ -481,7 +383,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
       GestureDetector(
         onTap: () {
           // 点击Dialog外部区域时收起键盘
-          FocusScope.of(Get.context!).unfocus();
+          KeyboardDismiss.dismiss();
         },
         child: Dialog(
           shape: RoundedRectangleBorder(
@@ -513,7 +415,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50),
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
@@ -559,10 +461,10 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
                         ),
                         filled: true,
-                        fillColor: Colors.grey[50],
+                        fillColor: AppColors.surfaceVariant,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                       autofocus: true,
@@ -591,7 +493,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -621,7 +523,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
       GestureDetector(
         onTap: () {
           // 点击Dialog外部区域时收起键盘
-          FocusScope.of(Get.context!).unfocus();
+          KeyboardDismiss.dismiss();
         },
         child: Dialog(
           shape: RoundedRectangleBorder(
@@ -653,7 +555,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50),
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
@@ -698,10 +600,10 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
                         ),
                         filled: true,
-                        fillColor: Colors.grey[50],
+                        fillColor: AppColors.surfaceVariant,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                       autofocus: true,
@@ -730,7 +632,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -773,7 +675,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
       GestureDetector(
         onTap: () {
           // 点击Dialog外部区域时收起键盘
-          FocusScope.of(Get.context!).unfocus();
+          KeyboardDismiss.dismiss();
         },
         child: StatefulBuilder(
           builder: (context, setState) {
@@ -807,7 +709,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50),
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
@@ -901,10 +803,10 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
                               ),
                               filled: true,
-                              fillColor: Colors.grey[50],
+                              fillColor: AppColors.surfaceVariant,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             ),
                           ),
@@ -938,7 +840,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4CAF50),
+                            backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -991,7 +893,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
@@ -1030,10 +932,10 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50).withOpacity(0.1),
+                          color: AppColors.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFF4CAF50).withOpacity(0.2),
+                            color: AppColors.primary.withOpacity(0.2),
                           ),
                         ),
                         child: Column(
@@ -1044,7 +946,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF4CAF50),
+                                color: AppColors.primary,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -1142,7 +1044,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: AppColors.surfaceVariant,
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(8),
                             topRight: Radius.circular(8),
@@ -1299,7 +1201,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                         icon: const Icon(Icons.save, size: 14),
                         label: Text('save'.tr, style: const TextStyle(fontSize: 11)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4CAF50),
+                          backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -1320,7 +1222,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
                             'copy_success'.tr,
                             'statistics_copied'.tr,
                             snackPosition: SnackPosition.TOP,
-                            backgroundColor: const Color(0xFF4CAF50),
+                            backgroundColor: AppColors.primary,
                             colorText: Colors.white,
                             duration: const Duration(seconds: 2),
                           );
@@ -1430,7 +1332,7 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),

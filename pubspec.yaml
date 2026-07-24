@@ -1,7 +1,7 @@
 name: score_board
 description: A professional score board application with modular architecture.
 publish_to: none
-version: 1.1.0+1
+version: 1.1.10+20260724
 environment:
   sdk: ^3.8.1
 dependencies:
@@ -19,6 +19,7 @@ dependencies:
   fl_umeng: ^4.0.2 
   package_info_plus: ^8.0.2
   in_app_review: ^2.0.9
+  flutter_svg: ^2.0.17
   
   # Local packages
   common_utils:
@@ -36,6 +37,7 @@ flutter:
   uses-material-design: true
   assets:
   - assets/icons/
+  - assets/icons/games/
 flutter_launcher_icons:
   android: launcher_icon
   ios: true

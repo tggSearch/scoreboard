@@ -3,17 +3,98 @@ import 'package:get/get.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/mahjong_controller.dart';
 import 'package:common_ui/common_ui.dart';
+import '../../../core/theme/app_colors.dart';
 
 class DoudizhuPage extends BaseView<MahjongController> {
   const DoudizhuPage({super.key});
+
+  static const int _maxPlayerNameLength = 8;
+  static const double _playerCardHeight = 118;
+  static const double _landlordBadgeSlotHeight = 24;
+  static const double _playerNameSlotHeight = 20;
+  static const double _playerScoreSlotHeight = 40;
+
+  String _displayPlayerName(String name) {
+    if (name.length <= _maxPlayerNameLength) return name;
+    return name.substring(0, _maxPlayerNameLength);
+  }
+
+  String _normalizePlayerName(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return trimmed;
+    return trimmed.length > _maxPlayerNameLength
+        ? trimmed.substring(0, _maxPlayerNameLength)
+        : trimmed;
+  }
+
+  String _formatCompactScore(int score) {
+    final absScore = score.abs();
+    final sign = score < 0 ? '-' : '';
+
+    if (absScore >= 1000000) {
+      final value = absScore / 1000000;
+      return '$sign${_formatCompactNumber(value)}m';
+    }
+    if (absScore >= 1000) {
+      final value = absScore / 1000;
+      return '$sign${_formatCompactNumber(value)}k';
+    }
+    return score.toString();
+  }
+
+  String _formatCompactNumber(double value) {
+    if (value >= 100) {
+      return value.round().toString();
+    }
+    if (value >= 10) {
+      final rounded = (value * 10).round() / 10;
+      return rounded == rounded.roundToDouble()
+          ? rounded.round().toString()
+          : rounded.toStringAsFixed(1);
+    }
+    final rounded = (value * 10).round() / 10;
+    return rounded == rounded.roundToDouble()
+        ? rounded.round().toString()
+        : rounded.toStringAsFixed(1);
+  }
+
+  Widget _buildCompactPlayerName(String name, {required TextStyle style}) {
+    return SizedBox(
+      width: double.infinity,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: Text(
+          _displayPlayerName(name),
+          style: style,
+          maxLines: 1,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactScoreText(int score, {required TextStyle style}) {
+    return SizedBox(
+      width: double.infinity,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: Text(
+          _formatCompactScore(score),
+          style: style,
+          maxLines: 1,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
     return AppBar(
       title: const Text('斗地主'),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-      elevation: 0,
+      
       actions: [
         // 语音开关
         Obx(() => IconButton(
@@ -106,7 +187,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
           const SizedBox(height: 16),
           
           // 游戏设置区域
-          _buildOperationSection(),
+          _buildOperationSection(context),
           
           const SizedBox(height: 16),
           
@@ -171,110 +252,103 @@ class DoudizhuPage extends BaseView<MahjongController> {
       final playerName = controller.playerNames[playerIndex];
       final playerScore = controller.playerScores[playerIndex];
       final isLandlord = controller.landlordPlayer.value == playerIndex;
-      
-      return Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: isLandlord 
-              ? const Color(0xFFFF9800).withOpacity(0.1)
-              : Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isLandlord 
-                ? const Color(0xFFFF9800)
-                : Colors.grey.shade200,
-            width: isLandlord ? 2 : 1,
+      final scoreColor = isLandlord ? const Color(0xFFFF9800) : Colors.black87;
+
+      return SizedBox(
+        height: _playerCardHeight,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isLandlord
+                ? const Color(0xFFFF9800).withOpacity(0.1)
+                : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isLandlord ? const Color(0xFFFF9800) : Colors.grey.shade200,
+              width: isLandlord ? 2 : 1,
+            ),
           ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // 地主标识
-            if (isLandlord)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF9800),
-                  borderRadius: BorderRadius.circular(12),
+          child: Column(
+            children: [
+              SizedBox(
+                height: _landlordBadgeSlotHeight,
+                child: Center(
+                  child: isLandlord
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF9800),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            '地主',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
-                child: const Text(
-                  '地主',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+              ),
+              SizedBox(
+                height: _playerNameSlotHeight,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _showPlayerNameEditDialog(playerIndex, playerName),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildCompactPlayerName(
+                          playerName,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: scoreColor,
+                          ),
+                        ),
+                      ),
+                      Icon(Icons.edit, size: 10, color: Colors.grey.shade600),
+                    ],
                   ),
                 ),
               ),
-            if (isLandlord) const SizedBox(height: 4),
-            
-            // 玩家名称 - 可点击修改
-            GestureDetector(
-              onTap: () {
-                print('修改玩家名称: $playerName');
-                _showPlayerNameEditDialog(playerIndex, playerName);
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                    playerName,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isLandlord 
-                          ? const Color(0xFFFF9800)
-                          : Colors.black87,
+              const SizedBox(height: 6),
+              SizedBox(
+                height: _playerScoreSlotHeight,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _showScoreEditDialog(playerIndex, playerName, playerScore),
+                  child: Container(
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: _buildCompactScoreText(
+                      playerScore,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: scoreColor,
+                        height: 1,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
                     ),
                   ),
-                  const SizedBox(width: 2),
-                  Icon(
-                    Icons.edit,
-                    size: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            // 分数显示 - 可点击修改
-            GestureDetector(
-              onTap: () {
-                print('修改玩家分数: $playerScore');
-                _showScoreEditDialog(playerIndex, playerName, playerScore);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Text(
-                  playerScore.toString(),
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: isLandlord 
-                        ? const Color(0xFFFF9800)
-                        : Colors.black87,
-                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     });
   }
 
-  Widget _buildOperationSection() {
+  Widget _buildOperationSection(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -329,46 +403,22 @@ class DoudizhuPage extends BaseView<MahjongController> {
                   children: [
                     const Text('倍数', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Obx(() {
-                            final currentValue = controller.currentMultiplier.value;
-                            final isCustom = ![1, 2, 4, 8, 16, 32].contains(currentValue);
-                            
-                            return DropdownButtonFormField<int>(
-                              value: isCustom ? -1 : currentValue,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                              ),
-                              items: [
-                                ...([1, 2, 4, 8, 16, 32].map((multiplier) {
-                                  return DropdownMenuItem(
-                                    value: multiplier,
-                                    child: Text('${multiplier}倍'),
-                                  );
-                                })),
-                                DropdownMenuItem(
-                                  value: -1, // 自定义标识
-                                  child: Text(isCustom ? '${currentValue}倍' : '自定义'),
-                                ),
-                              ],
-                              onChanged: (value) {
-                                if (value != null) {
-                                  if (value == -1) {
-                                    // 选择自定义，显示输入框
-                                    _showCustomMultiplierDialog();
-                                  } else {
-                                    controller.setMultiplier(value);
-                                  }
-                                }
-                              },
-                            );
-                          }),
+                    Obx(() {
+                      final currentValue = controller.currentMultiplier.value;
+                      final presetValues = [1, 2, 4, 8, 16, 32];
+                      final isCustom = !presetValues.contains(currentValue);
+                      final displayText = '${currentValue}倍';
+
+                      return AppPickerField(
+                        value: displayText,
+                        onTap: () => _showMultiplierSheet(
+                          context,
+                          currentValue: currentValue,
+                          isCustom: isCustom,
+                          presetValues: presetValues,
                         ),
-                      ],
-                    ),
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -402,11 +452,18 @@ class DoudizhuPage extends BaseView<MahjongController> {
                       foregroundColor: controller.landlordPlayer.value == index
                           ? Colors.white
                           : Colors.black87,
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                      minimumSize: const Size(0, 40),
                     ),
-                    child: Text(
+                    child: _buildCompactPlayerName(
                       controller.playerNames[index],
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: controller.landlordPlayer.value == index
+                            ? Colors.white
+                            : Colors.black87,
+                      ),
                     ),
                   )),
                 ),
@@ -461,7 +518,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
     return Obx(() => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -516,9 +573,8 @@ class DoudizhuPage extends BaseView<MahjongController> {
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                    '领先: ${controller.leadingPlayer}',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                      overflow: TextOverflow.ellipsis,
+                      '领先: ${_displayPlayerName(controller.leadingPlayer)}',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                       maxLines: 1,
                     ),
                   ),
@@ -531,9 +587,8 @@ class DoudizhuPage extends BaseView<MahjongController> {
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                    '最高: ${controller.highestScore}分',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                      overflow: TextOverflow.ellipsis,
+                      '最高: ${_formatCompactScore(controller.highestScore)}分',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                       maxLines: 1,
                     ),
                   ),
@@ -550,12 +605,13 @@ class DoudizhuPage extends BaseView<MahjongController> {
     Get.dialog(
       CustomInputDialog(
         title: '修改玩家${playerIndex + 1}名称',
-        labelText: '玩家名称',
+        labelText: '玩家名称（最多$_maxPlayerNameLength字）',
         initialValue: currentName,
         onConfirm: (newName) async {
-          if (newName.trim().isNotEmpty) {
-            print('修改玩家名称: $newName');
-            await controller.setPlayerName(playerIndex, newName.trim());
+          final normalizedName = _normalizePlayerName(newName);
+          if (normalizedName.isNotEmpty) {
+            print('修改玩家名称: $normalizedName');
+            await controller.setPlayerName(playerIndex, normalizedName);
           } else {
             Get.snackbar(
               '输入错误',
@@ -625,7 +681,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.casino, color: const Color(0xFF4CAF50)),
+            Icon(Icons.casino, color: AppColors.primary),
             const SizedBox(width: 8),
             const Text('记录胡牌', style: TextStyle(fontWeight: FontWeight.bold)),
           ],
@@ -648,7 +704,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.person, color: const Color(0xFF4CAF50)),
+                              Icon(Icons.person, color: AppColors.primary),
                               const SizedBox(width: 8),
                               const Text('胡牌者', style: TextStyle(fontWeight: FontWeight.bold)),
                             ],
@@ -660,7 +716,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                               labelText: '选择胡牌者',
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                               filled: true,
-                              fillColor: Colors.grey[50],
+                              fillColor: AppColors.surfaceVariant,
                             ),
                             items: List.generate(4, (index) {
                               return DropdownMenuItem(
@@ -669,7 +725,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                                   children: [
                                     CircleAvatar(
                                       radius: 12,
-                                      backgroundColor: const Color(0xFF4CAF50),
+                                      backgroundColor: AppColors.primary,
                                       child: Text(
                                         controller.playerNames[index].substring(0, 1),
                                         style: const TextStyle(color: Colors.white, fontSize: 12),
@@ -678,8 +734,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        controller.playerNames[index],
-                                        overflow: TextOverflow.ellipsis,
+                                        _displayPlayerName(controller.playerNames[index]),
                                         maxLines: 1,
                                       ),
                                     ),
@@ -718,7 +773,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.star, color: const Color(0xFF4CAF50)),
+                              Icon(Icons.star, color: AppColors.primary),
                               const SizedBox(width: 8),
                               const Text('胡牌类型', style: TextStyle(fontWeight: FontWeight.bold)),
                             ],
@@ -730,7 +785,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                               labelText: '选择胡牌类型',
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                               filled: true,
-                              fillColor: Colors.grey[50],
+                              fillColor: AppColors.surfaceVariant,
                             ),
                             items: controller.winTypes.map((type) {
                               return DropdownMenuItem(value: type, child: Text(type));
@@ -750,7 +805,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.casino, color: const Color(0xFF4CAF50)),
+                              Icon(Icons.casino, color: AppColors.primary),
                               const SizedBox(width: 8),
                               const Text('番数设置', style: TextStyle(fontWeight: FontWeight.bold)),
                             ],
@@ -766,7 +821,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                                     labelText: '胡牌番数',
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     filled: true,
-                                    fillColor: Colors.grey[50],
+                                    fillColor: AppColors.surfaceVariant,
                                   ),
                                   items: controller.fanOptions.map((fans) {
                                     return DropdownMenuItem(value: fans, child: Text('$fans 番'));
@@ -786,7 +841,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                                     labelText: '抓码番数',
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     filled: true,
-                                    fillColor: Colors.grey[50],
+                                    fillColor: AppColors.surfaceVariant,
                                   ),
                                   items: [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 24, 32, 48, 64].map((fans) {
                                     return DropdownMenuItem(value: fans, child: Text('$fans 番'));
@@ -816,7 +871,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.touch_app, color: const Color(0xFF4CAF50)),
+                              Icon(Icons.touch_app, color: AppColors.primary),
                               const SizedBox(width: 8),
                               const Text('胡牌方式', style: TextStyle(fontWeight: FontWeight.bold)),
                             ],
@@ -830,7 +885,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                                   title: const Text('自摸'),
                                   value: true,
                                   groupValue: isSelfDraw,
-                                  activeColor: const Color(0xFF4CAF50),
+                                  activeColor: AppColors.primary,
                                   onChanged: (value) {
                                     setState(() {
                                       isSelfDraw = value ?? true;
@@ -843,7 +898,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                                   title: const Text('点炮'),
                                   value: false,
                                   groupValue: isSelfDraw,
-                                  activeColor: const Color(0xFF4CAF50),
+                                  activeColor: AppColors.primary,
                                   onChanged: (value) {
                                     setState(() {
                                       isSelfDraw = value ?? false;
@@ -862,7 +917,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                                 labelText: '被点炮者',
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                 filled: true,
-                                fillColor: Colors.grey[50],
+                                fillColor: AppColors.surfaceVariant,
                               ),
                               items: List.generate(4, (index) {
                                 if (index == selectedWinner) return null;
@@ -872,7 +927,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                                     children: [
                                       CircleAvatar(
                                         radius: 12,
-                                        backgroundColor: const Color(0xFF4CAF50),
+                                        backgroundColor: AppColors.primary,
                                         child: Text(
                                           controller.playerNames[index].substring(0, 1),
                                           style: const TextStyle(color: Colors.white, fontSize: 12),
@@ -881,8 +936,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          controller.playerNames[index],
-                                          overflow: TextOverflow.ellipsis,
+                                          _displayPlayerName(controller.playerNames[index]),
                                           maxLines: 1,
                                         ),
                                       ),
@@ -908,7 +962,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: const Text('取消'),
           ),
           ElevatedButton(
@@ -923,10 +977,10 @@ class DoudizhuPage extends BaseView<MahjongController> {
                 print('记录胡牌: ${controller.playerNames[selectedWinner]} 胡牌 $selectedWinType 点炮 ${controller.playerNames[selectedLoser]} ${selectedFans}番 + 抓码${selectedZhuama}番');
                 await controller.winGamePointPao(selectedWinner, selectedLoser, selectedFans, selectedZhuama, selectedWinType);
               }
-              Get.back();
+              DialogNavigator.close();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
             child: const Text('确定'),
@@ -946,14 +1000,14 @@ class DoudizhuPage extends BaseView<MahjongController> {
                   content: const Text('确定要重置所有分数和记录吗？\n\n注意：玩家名字将保持不变。'),
                   actions: [
                     TextButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => DialogNavigator.close(),
                       child: const Text('取消'),
                     ),
                     ElevatedButton(
                                               onPressed: () async {
                           await controller.resetAllScores();
-                          Get.back(); // 关闭确认对话框
-                          Get.back(); // 关闭胡牌对话框
+                          DialogNavigator.close(); // 关闭确认对话框
+                          DialogNavigator.close(); // 关闭胡牌对话框
                         },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
@@ -974,6 +1028,38 @@ class DoudizhuPage extends BaseView<MahjongController> {
         ],
       ),
     );
+  }
+
+  Future<void> _showMultiplierSheet(
+    BuildContext context, {
+    required int currentValue,
+    required bool isCustom,
+    required List<int> presetValues,
+  }) async {
+    const customValue = -1;
+    final selected = isCustom ? customValue : currentValue;
+
+    final result = await AppOptionSheet.show<int>(
+      context: context,
+      title: '选择倍数',
+      subtitle: '当前：${currentValue}倍',
+      selectedValue: selected,
+      options: presetValues
+          .map((value) => AppOptionItem(value: value, label: '${value}倍'))
+          .toList(),
+      trailingOption: AppOptionItem(
+        value: customValue,
+        label: isCustom ? '自定义（${currentValue}倍）' : '自定义倍数',
+        icon: Icons.edit_outlined,
+      ),
+    );
+
+    if (result == null) return;
+    if (result == customValue) {
+      _showCustomMultiplierDialog();
+      return;
+    }
+    controller.setMultiplier(result);
   }
 
   void _showCustomMultiplierDialog() {
@@ -1057,7 +1143,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                       maxLines: 1,
                     ),
                     trailing: Text(
-                      '${record.score > 0 ? '+' : ''}${record.score}分',
+                      '${record.score > 0 ? '+' : ''}${_formatCompactScore(record.score)}',
                       style: TextStyle(
                         color: record.score > 0 ? Colors.green : Colors.red,
                         fontWeight: FontWeight.bold,
@@ -1072,7 +1158,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: const Text('关闭'),
           ),
         ],
@@ -1083,7 +1169,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
   void _showSettingsDialog() {
     final fields = List.generate(3, (index) => {
       'key': 'player${index + 1}',
-      'label': '玩家${index + 1}名称',
+      'label': '玩家${index + 1}名称（最多$_maxPlayerNameLength字）',
       'initialValue': controller.playerNames[index],
     });
     
@@ -1095,7 +1181,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
           for (int i = 0; i < 3; i++) {
             final name = values['player${i + 1}']?.trim();
             if (name != null && name.isNotEmpty) {
-              await controller.setPlayerName(i, name);
+              await controller.setPlayerName(i, _normalizePlayerName(name));
             }
           }
         },
@@ -1139,11 +1225,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                   items: List.generate(4, (index) {
                     return DropdownMenuItem(
                       value: index,
-                      child: Text(
-                        controller.playerNames[index],
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
+                      child: Text(_displayPlayerName(controller.playerNames[index])),
                     );
                   }),
                   onChanged: (value) {
@@ -1283,11 +1365,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
                             if (index == selectedPlayer) return null; // 跳过杠牌者
                             return DropdownMenuItem(
                               value: index,
-                              child: Text(
-                                controller.playerNames[index],
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
+                              child: Text(_displayPlayerName(controller.playerNames[index])),
                             );
                           }).where((item) => item != null).cast<DropdownMenuItem<int>>().toList(),
                           onChanged: (value) {
@@ -1306,7 +1384,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: const Text('取消'),
           ),
           ElevatedButton(
@@ -1335,10 +1413,10 @@ class DoudizhuPage extends BaseView<MahjongController> {
                 print('记录杠牌: ${controller.playerNames[selectedPlayer]} $selectedGangType ${fans}番');
                 await controller.gang(selectedPlayer, selectedGangType, fans);
               }
-              Get.back();
+              DialogNavigator.close();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
             child: const Text('确定'),
@@ -1364,7 +1442,7 @@ class DoudizhuPage extends BaseView<MahjongController> {
             '✅ 重置完成',
             '所有分数和记录已清空',
             snackPosition: SnackPosition.TOP,
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: AppColors.primary,
             colorText: Colors.white,
             duration: const Duration(seconds: 2),
             borderRadius: 12,

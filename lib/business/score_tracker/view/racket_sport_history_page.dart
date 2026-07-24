@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/racket_sport_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class RacketSportHistoryPage extends BaseView<RacketSportController> {
   const RacketSportHistoryPage({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text('${controller.sportName}历史'),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-      elevation: 0,
+    return AppAppBar(
+      titleText: '${controller.sportName}历史',
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: () => Get.back(),
@@ -38,7 +37,7 @@ class RacketSportHistoryPage extends BaseView<RacketSportController> {
               children: [
                 Icon(
                   Icons.history,
-                  color: const Color(0xFF4CAF50),
+                  color: AppColors.primary,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
@@ -189,10 +188,10 @@ class RacketSportHistoryPage extends BaseView<RacketSportController> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isWinner ? const Color(0xFF4CAF50).withOpacity(0.1) : Colors.grey.shade50,
+        color: isWinner ? AppColors.primary.withOpacity(0.1) : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isWinner ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+          color: isWinner ? AppColors.primary : Colors.grey.shade300,
           width: isWinner ? 2 : 1,
         ),
       ),
@@ -203,7 +202,7 @@ class RacketSportHistoryPage extends BaseView<RacketSportController> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: isWinner ? const Color(0xFF4CAF50) : Colors.black87,
+              color: isWinner ? AppColors.primary : Colors.black87,
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -215,7 +214,7 @@ class RacketSportHistoryPage extends BaseView<RacketSportController> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: isWinner ? const Color(0xFF4CAF50) : Colors.black87,
+              color: isWinner ? AppColors.primary : Colors.black87,
             ),
             textAlign: TextAlign.center,
           ),
@@ -224,7 +223,7 @@ class RacketSportHistoryPage extends BaseView<RacketSportController> {
             Icon(
               Icons.emoji_events,
               size: 16,
-              color: const Color(0xFF4CAF50),
+              color: AppColors.primary,
             ),
           ],
         ],

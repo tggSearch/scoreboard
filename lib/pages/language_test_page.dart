@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../core/controllers/language_controller.dart';
+import '../core/theme/app_colors.dart';
 
 class LanguageTestPage extends StatelessWidget {
   const LanguageTestPage({super.key});
@@ -12,7 +13,7 @@ class LanguageTestPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Language Test'),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: Padding(

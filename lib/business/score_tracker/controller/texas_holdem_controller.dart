@@ -5,6 +5,7 @@ import '../../../core/base/base_controller.dart';
 import '../../../core/data/game_result.dart';
 import '../../../core/utils/game_result_manager.dart';
 import 'package:common_ui/common_ui.dart';
+import '../../../core/theme/app_colors.dart';
 import 'package:flutter/material.dart'; // Added for Color
 
 class TexasHoldemRecord {
@@ -252,7 +253,7 @@ class TexasHoldemController extends BaseController {
         
         // 语音播报
         if (voiceAnnouncer.isEnabled.value) {
-          final action = adjustment > 0 ? '获得' : '失去';
+          final action = adjustment > 0 ? 'texas_holdem_gained'.tr : 'texas_holdem_lost'.tr;
           voiceAnnouncer.announce('texas_holdem_score_adjustment'.tr.replaceAll('{player}', player).replaceAll('{action}', action).replaceAll('{adjustment}', adjustment.abs().toString()));
         }
       } else {
@@ -533,7 +534,7 @@ class TexasHoldemController extends BaseController {
       '保存成功',
       '游戏数据已保存到历史记录',
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );

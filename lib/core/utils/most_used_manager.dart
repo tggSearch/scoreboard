@@ -101,7 +101,28 @@ class MostUsedManager {
     return gameId.tr;
   }
   
-  // 获取游戏图标
+  // 获取游戏图标资源路径（App 内计分类型图标，非 App 启动图标）
+  static String getGameIconAsset(String gameId) {
+    switch (gameId) {
+      case 'basketball':
+      case 'football':
+      case 'badminton':
+      case 'pingpong':
+      case 'tennis':
+      case 'volleyball':
+      case 'mahjong':
+      case 'texas_holdem':
+      case 'doudizhu':
+      case 'bridge':
+      case 'uno':
+      case 'custom_score':
+        return 'assets/icons/games/$gameId.svg';
+      default:
+        return 'assets/icons/games/default.svg';
+    }
+  }
+
+  // 获取游戏 emoji（保留兼容，首页已改用 SVG 图标）
   static String getGameEmoji(String gameId) {
     switch (gameId) {
       case 'basketball':

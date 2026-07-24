@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/user_profile_controller.dart';
 import '../../../core/controllers/language_controller.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_shadows.dart';
 
 class UserProfilePage extends BaseView<UserProfileController> {
   const UserProfilePage({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text('settings'.tr),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-    );
+    return AppAppBar(titleText: 'settings'.tr);
   }
 
   @override
   Widget buildContent(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
           // 应用信息卡片
@@ -39,39 +41,31 @@ class UserProfilePage extends BaseView<UserProfileController> {
 
   Widget _buildAppInfoCard() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xxl),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF4CAF50),
-            Color(0xFF66BB6A),
-          ],
+          colors: AppColors.splashGradient,
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        boxShadow: AppShadows.primaryGlow(AppColors.primary),
       ),
       child: Row(
         children: [
-          // 应用图标
           Container(
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: const Icon(
-              Icons.sports_score,
-              color: Colors.white,
-              size: 32,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Image.asset(
+                'assets/icons/score_board.png',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -113,18 +107,8 @@ class UserProfilePage extends BaseView<UserProfileController> {
   }
 
   Widget _buildFunctionList() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return AppSurfaceCard(
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           _buildFunctionItem(
@@ -190,12 +174,12 @@ class UserProfilePage extends BaseView<UserProfileController> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Icon(
                 icon,
-                color: const Color(0xFF4CAF50),
+                color: AppColors.primary,
                 size: 20,
               ),
             ),
@@ -214,9 +198,9 @@ class UserProfilePage extends BaseView<UserProfileController> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -224,7 +208,7 @@ class UserProfilePage extends BaseView<UserProfileController> {
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: Colors.grey[400],
+              color: AppColors.textMuted,
               size: 16,
             ),
           ],
@@ -234,27 +218,16 @@ class UserProfilePage extends BaseView<UserProfileController> {
   }
 
   Widget _buildDivider() {
-    return Container(
+    return const Divider(
       height: 1,
-      color: Colors.grey[200],
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      indent: 16,
+      endIndent: 16,
+      color: AppColors.divider,
     );
   }
 
   Widget _buildAboutSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return AppSurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -268,26 +241,26 @@ class UserProfilePage extends BaseView<UserProfileController> {
           const SizedBox(height: 12),
           Text(
             'about_content'.tr,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               height: 1.5,
             ),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.email,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
                 size: 16,
               ),
               const SizedBox(width: 8),
               Text(
                 'contact_us'.tr,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
@@ -417,7 +390,7 @@ class UserProfilePage extends BaseView<UserProfileController> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade200,
+                        color: isSelected ? AppColors.primary : Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Center(
@@ -435,7 +408,7 @@ class UserProfilePage extends BaseView<UserProfileController> {
                       language['nativeName']!,
                       style: TextStyle(
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? const Color(0xFF4CAF50) : Colors.black87,
+                        color: isSelected ? AppColors.primary : AppColors.textPrimary,
                       ),
                     ),
                     subtitle: Text(
@@ -448,7 +421,7 @@ class UserProfilePage extends BaseView<UserProfileController> {
                     trailing: isSelected
                         ? const Icon(
                             Icons.check_circle,
-                            color: Color(0xFF4CAF50),
+                            color: AppColors.primary,
                             size: 20,
                           )
                         : null,
@@ -460,7 +433,7 @@ class UserProfilePage extends BaseView<UserProfileController> {
                           'success'.tr,
                           '${'language'.tr} ${'update'.tr} ${'success'.tr}',
                           snackPosition: SnackPosition.TOP,
-                          backgroundColor: const Color(0xFF4CAF50),
+                          backgroundColor: AppColors.primary,
                           colorText: Colors.white,
                           duration: const Duration(seconds: 2),
                         );
@@ -510,7 +483,7 @@ class UserProfilePage extends BaseView<UserProfileController> {
               Get.snackbar(
                 'tip'.tr,
                 '请前往应用商店为应用评分',
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.primary,
                 colorText: Colors.white,
               );
             },

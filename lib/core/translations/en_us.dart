@@ -348,6 +348,7 @@ class EnUS {
     'remaining_1_minute': '1 minute remaining',
     'remaining_30_seconds': '30 seconds remaining',
     'time_up_game_over': 'Time up! Game over!',
+    'game_over': 'Game over',
     'game_result_saved': 'Game result saved to history',
     'game_result_save_failed': 'Failed to save game result, please try again',
     'points_current_score': 'points, current score',
@@ -356,6 +357,9 @@ class EnUS {
     'draw': 'draw!',
     'score_reset_to_zero': 'Score reset to 0 vs 0',
     'final_score': 'Final score',
+    'game_end_score_announce': 'Game over, final score {score1} vs {score2}',
+    'team_wins_game_suffix': ', {team} wins',
+    'game_draw_suffix': ', draw',
 
     // Basketball UI
     'basketball_scoring': 'Basketball Scoring',
@@ -500,6 +504,8 @@ class EnUS {
     'gang_announce': '{player} {gang_type}, won {score} points',
     'gang_point_announce': '{player} gang, {loser} be gang, {score} points',
     'manual_score_announce': '{player} manual {operation} {score} points',
+    'manual_score_add': 'added',
+    'manual_score_subtract': 'subtracted',
     'game_reset_announce': 'Game reset, all scores cleared',
     'landlord_wins_announce': 'Landlord {landlord} wins, gets {score} points',
     'farmers_win_announce': 'Farmers win, landlord {landlord} loses {score} points',
@@ -612,7 +618,8 @@ class EnUS {
     
     // Racket Sport Voice Announcements
     'team_wins_announce': '{team} wins!',
-    'team_scores_announce': '{team} scores, {score}',
+    'team_scores_announce': '{team} scores, score {score1} to {score2}',
+    'racket_manual_scores_announce': 'Manual score update, current score {score1} to {score2}',
     'manual_score_team_wins': 'Manual score change, {winner} wins!',
     'match_reset_announce': 'Game reset',
     
@@ -761,6 +768,8 @@ class EnUS {
 
     // Texas Holdem
     'texas_holdem_score_adjustment': '{player} {action} {adjustment} times',
+    'texas_holdem_gained': 'gained',
+    'texas_holdem_lost': 'lost',
     'texas_holdem_result_saved': 'Match result saved',
 
     // History Records

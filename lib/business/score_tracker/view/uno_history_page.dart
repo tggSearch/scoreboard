@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/uno_controller.dart';
 
@@ -11,8 +12,8 @@ class UnoHistoryPage extends BaseView<UnoController> {
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text('uno'.tr + ' ' + 'history'.tr),
+    return AppAppBar(
+      titleText: 'uno'.tr + ' ' + 'history'.tr,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: () => Get.back(),
@@ -24,15 +25,9 @@ class UnoHistoryPage extends BaseView<UnoController> {
   Widget buildContent(BuildContext context) {
     return Obx(() {
       if (controller.records.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.history, size: 64, color: Colors.grey),
-              const SizedBox(height: 16),
-              Text('no_history_records'.tr, style: const TextStyle(fontSize: 18, color: Colors.grey)),
-            ],
-          ),
+        return AppEmptyState(
+          icon: Icons.history,
+          message: 'no_history_records'.tr,
         );
       }
 

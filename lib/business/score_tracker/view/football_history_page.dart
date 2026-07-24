@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/football_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class FootballHistoryPage extends BaseView<FootballController> {
   const FootballHistoryPage({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text('football'.tr + ' ' + 'history'.tr),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-      elevation: 0,
+    return AppAppBar(
+      titleText: 'football'.tr + ' ' + 'history'.tr,
       actions: [
         IconButton(
           onPressed: () {
@@ -28,25 +27,9 @@ class FootballHistoryPage extends BaseView<FootballController> {
   Widget buildContent(BuildContext context) {
     return Obx(() {
       if (controller.records.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.history,
-                size: 64,
-                color: Colors.grey,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'no_history_records'.tr,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
+        return AppEmptyState(
+          icon: Icons.history,
+          message: 'no_history_records'.tr,
         );
       }
 
@@ -66,7 +49,11 @@ class FootballHistoryPage extends BaseView<FootballController> {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -76,7 +63,7 @@ class FootballHistoryPage extends BaseView<FootballController> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: AppColors.primary,
                   radius: 20,
                   child: const Icon(
                     Icons.sports_soccer,
@@ -108,7 +95,7 @@ class FootballHistoryPage extends BaseView<FootballController> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50),
+                    color: AppColors.primary,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -203,7 +190,7 @@ class FootballHistoryPage extends BaseView<FootballController> {
                 'clear_history_success'.tr,
                 'all_history_records_cleared'.tr,
                 snackPosition: SnackPosition.TOP,
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.primary,
                 colorText: Colors.white,
               );
             },

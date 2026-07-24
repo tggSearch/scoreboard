@@ -8,7 +8,9 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../core/base/base_controller.dart';
 import '../../../core/data/game_result.dart';
 import '../../../core/utils/game_result_manager.dart';
+import '../../../core/utils/orientation_helper.dart';
 import 'package:common_ui/common_ui.dart';
+import '../../../core/theme/app_colors.dart';
 
 class BasketballController extends BaseController {
   // Time related
@@ -105,10 +107,7 @@ class BasketballController extends BaseController {
     loadHistory(); // 加载历史记录
     
     // Ensure reset to portrait mode every time entering the page
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    OrientationHelper.setPortrait();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
 
@@ -117,10 +116,7 @@ class BasketballController extends BaseController {
     _disableWakeLock();
     _saveDebounceTimer?.cancel();
     // Ensure restore device orientation when exiting
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    OrientationHelper.setPortrait();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.onClose();
   }
@@ -204,10 +200,7 @@ class BasketballController extends BaseController {
     _isLandscapeMode.value = !_isLandscapeMode.value;
     if (_isLandscapeMode.value) {
       // 1. 横屏处理
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
+      OrientationHelper.setLandscape();
       
       // 2. 长亮屏幕
       _isScreenWakeLockEnabled.value = true;
@@ -218,10 +211,7 @@ class BasketballController extends BaseController {
     } else {
       // 退出横屏模式
       // 恢复设备方向为竖屏
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
+      OrientationHelper.setPortrait();
       
       // 禁用屏幕长亮
       _isScreenWakeLockEnabled.value = false;
@@ -571,7 +561,7 @@ class BasketballController extends BaseController {
           'save_success'.tr,
           'game_result_saved'.tr,
           snackPosition: SnackPosition.TOP,
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: AppColors.primary,
           colorText: Colors.white,
         );
       } else {
@@ -614,7 +604,7 @@ class BasketballController extends BaseController {
       '$teamName $scoreText${'points_current_score'.tr} $team1Score ${'vs'.tr} $team2Score',
       duration: const Duration(seconds: 2),
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
     );
   }
@@ -623,14 +613,16 @@ class BasketballController extends BaseController {
   void _announceGameEnd() {
     if (!_isVoiceEnabled.value) return;
     
-    String announcement = 'game_over'.tr + '！${'final_score'.tr} $team1Score ${'vs'.tr} $team2Score';
-    
+    String announcement = 'game_end_score_announce'.tr
+        .replaceAll('{score1}', team1Score.toString())
+        .replaceAll('{score2}', team2Score.toString());
+
     if (team1Score > team2Score) {
-      announcement += '，$team1Name ${'wins'.tr}';
+      announcement += 'team_wins_game_suffix'.tr.replaceAll('{team}', team1Name);
     } else if (team2Score > team1Score) {
-      announcement += '，$team2Name ${'wins'.tr}';
+      announcement += 'team_wins_game_suffix'.tr.replaceAll('{team}', team2Name);
     } else {
-      announcement += '，${'draw'.tr}';
+      announcement += 'game_draw_suffix'.tr;
     }
     
     // 使用VoiceAnnouncer进行语音播报

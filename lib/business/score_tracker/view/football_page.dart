@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:common_ui/common_ui.dart';
 import 'package:get/get.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/football_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class FootballPage extends BaseView<FootballController> {
   const FootballPage({super.key});
@@ -26,9 +28,7 @@ class FootballPage extends BaseView<FootballController> {
             'football_scoring'.tr,
             overflow: TextOverflow.ellipsis,
           ),
-          backgroundColor: const Color(0xFF4CAF50),
-          foregroundColor: Colors.white,
-          elevation: 0,
+          
           actions: [
             // 横屏模式切换
             Obx(() => IconButton(
@@ -118,9 +118,7 @@ class FootballPage extends BaseView<FootballController> {
           'football_scoring'.tr,
           overflow: TextOverflow.ellipsis,
         ),
-        backgroundColor: const Color(0xFF4CAF50),
-        foregroundColor: Colors.white,
-        elevation: 0,
+        
         actions: [
           // 横屏模式切换
           Obx(() => IconButton(
@@ -260,7 +258,7 @@ class FootballPage extends BaseView<FootballController> {
                     style: const TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF4CAF50),
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -292,7 +290,7 @@ class FootballPage extends BaseView<FootballController> {
                 icon: const Icon(Icons.play_arrow),
                 label: Text('start'.tr),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -338,7 +336,7 @@ class FootballPage extends BaseView<FootballController> {
       GestureDetector(
         onTap: () {
           // 点击Dialog外部区域时收起键盘
-          FocusScope.of(Get.context!).unfocus();
+          KeyboardDismiss.dismiss();
         },
         child: AlertDialog(
           title: Text('modify_time'.tr),
@@ -421,7 +419,7 @@ class FootballPage extends BaseView<FootballController> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
               child: Text('confirm'.tr),
@@ -439,7 +437,7 @@ class FootballPage extends BaseView<FootballController> {
         Get.back();
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         minimumSize: const Size(0, 32),
@@ -466,7 +464,7 @@ class FootballPage extends BaseView<FootballController> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -492,7 +490,7 @@ class FootballPage extends BaseView<FootballController> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isLeading ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+            color: isLeading ? AppColors.primary : Colors.grey.shade300,
             width: isLeading ? 2 : 1,
           ),
           boxShadow: [
@@ -519,7 +517,7 @@ class FootballPage extends BaseView<FootballController> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isLeading ? const Color(0xFF4CAF50) : Colors.black87,
+                        color: isLeading ? AppColors.primary : Colors.black87,
                       ),
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
@@ -547,13 +545,10 @@ class FootballPage extends BaseView<FootballController> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Text(
-                  score.toString(),
-                  style: TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: isLeading ? const Color(0xFF4CAF50) : Colors.black87,
-                  ),
+                child: AppScoreDisplay(
+                  score: score.toString(),
+                  fontSize: 48,
+                  color: isLeading ? AppColors.primary : AppColors.textPrimary,
                 ),
               ),
             ),
@@ -598,7 +593,7 @@ class FootballPage extends BaseView<FootballController> {
                     style: const TextStyle(fontSize: 14),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
@@ -621,7 +616,7 @@ class FootballPage extends BaseView<FootballController> {
                     style: const TextStyle(fontSize: 14),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
@@ -659,7 +654,7 @@ class FootballPage extends BaseView<FootballController> {
           const SizedBox(height: 16),
           Row(
             children: [
-              const Icon(Icons.emoji_events, color: Color(0xFF4CAF50)),
+              const Icon(Icons.emoji_events, color: AppColors.primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -711,7 +706,7 @@ class FootballPage extends BaseView<FootballController> {
       GestureDetector(
         onTap: () {
           // 点击Dialog外部区域时收起键盘
-          FocusScope.of(Get.context!).unfocus();
+          KeyboardDismiss.dismiss();
         },
         child: AlertDialog(
           title: Text('modify_team_name'.tr.replaceAll('{team}', teamNumber == 1 ? 'home_team'.tr : 'away_team'.tr)),
@@ -746,7 +741,7 @@ class FootballPage extends BaseView<FootballController> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
               child: Text('confirm'.tr),
@@ -765,7 +760,7 @@ class FootballPage extends BaseView<FootballController> {
       GestureDetector(
         onTap: () {
           // 点击Dialog外部区域时收起键盘
-          FocusScope.of(Get.context!).unfocus();
+          KeyboardDismiss.dismiss();
         },
         child: AlertDialog(
           title: Text('modify_team_score'.tr.replaceAll('{team}', teamName)),
@@ -801,7 +796,7 @@ class FootballPage extends BaseView<FootballController> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
               child: Text('confirm'.tr),
@@ -823,7 +818,7 @@ class FootballPage extends BaseView<FootballController> {
       GestureDetector(
         onTap: () {
           // 点击Dialog外部区域时收起键盘
-          FocusScope.of(Get.context!).unfocus();
+          KeyboardDismiss.dismiss();
         },
         child: AlertDialog(
           title: Text('match_settings'.tr),
@@ -915,7 +910,7 @@ class FootballPage extends BaseView<FootballController> {
                 Get.back();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
               child: Text('save'.tr),
@@ -949,7 +944,7 @@ class FootballPage extends BaseView<FootballController> {
                 'reset_complete'.tr,
                 'reset_complete_message'.tr,
                 snackPosition: SnackPosition.TOP,
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: AppColors.primary,
                 colorText: Colors.white,
                 duration: const Duration(seconds: 2),
                 borderRadius: 12,
@@ -978,10 +973,10 @@ class FootballPage extends BaseView<FootballController> {
   Widget _buildLandscapeLayout() {
     return GestureDetector(
       onTap: () {
-        // 点击屏幕切换导航栏显示状态
+        KeyboardDismiss.dismiss();
         controller.toggleAppBarVisibility();
       },
-      behavior: HitTestBehavior.opaque, // 确保点击事件能被捕获
+      behavior: HitTestBehavior.opaque,
       child: Container(
         width: double.infinity,
         height: double.infinity,

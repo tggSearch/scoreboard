@@ -72,6 +72,8 @@ class ZhCN {
     'gang_announce': '{player}{gang_type}，赢得{score}分',
     'gang_point_announce': '{player}杠牌，{loser}被杠，{score}分',
     'manual_score_announce': '{player}手动{operation}{score}分',
+    'manual_score_add': '加',
+    'manual_score_subtract': '减',
     'game_reset_announce': '游戏重置，所有分数清零',
     'landlord_wins_announce': '地主{landlord}获胜，获得{score}分',
     'farmers_win_announce': '农民获胜，地主{landlord}失去{score}分',
@@ -413,7 +415,8 @@ class ZhCN {
     
     // Racket Sport Voice Announcements
     'team_wins_announce': '{team}获胜！',
-    'team_scores_announce': '{team}得分，{score}',
+    'team_scores_announce': '{team}得分，比分 {score1} 比 {score2}',
+    'racket_manual_scores_announce': '手动修改分数，当前比分 {score1} 比 {score2}',
     'manual_score_team_wins': '手动修改分数，{winner}获胜！',
     'match_reset_announce': '游戏已重置',
     
@@ -609,6 +612,16 @@ class ZhCN {
     'points_current_score': '分，当前比分',
     'vs': '比',
     'score_reset_to_zero': '比分重置为0比0',
+    'game_over': '比赛结束',
+    'final_score': '最终比分',
+    'remaining_10_minutes': '剩余10分钟',
+    'remaining_5_minutes': '剩余5分钟',
+    'remaining_1_minute': '剩余1分钟',
+    'remaining_30_seconds': '剩余30秒',
+    'time_up_game_over': '时间到，比赛结束',
+    'game_end_score_announce': '比赛结束，最终比分 {score1} 比 {score2}',
+    'team_wins_game_suffix': '，{team} 获胜',
+    'game_draw_suffix': '，平局',
 
     // Bridge
     'bridge_scoring': '桥牌计分',
@@ -619,6 +632,8 @@ class ZhCN {
 
     // Texas Holdem
     'texas_holdem_score_adjustment': '{player}{action}{adjustment}次',
+    'texas_holdem_gained': '获得',
+    'texas_holdem_lost': '失去',
     'texas_holdem_result_saved': '比赛结果已保存',
 
     // History Records

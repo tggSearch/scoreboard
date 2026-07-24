@@ -10,6 +10,8 @@ import 'core/routes/app_routes.dart';
 import 'core/l10n/translations.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/controllers/language_controller.dart';
+import 'package:common_ui/common_ui.dart';
+import 'core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,24 +95,7 @@ class MyApp extends StatelessWidget {
     
     return Obx(() => GetMaterialApp(
       title: 'Score Board',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4CAF50), // 浅绿色主题
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF4CAF50),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: false,
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedItemColor: Color(0xFF4CAF50),
-          unselectedItemColor: Colors.grey,
-          type: BottomNavigationBarType.fixed,
-        ),
-      ),
+      theme: AppTheme.light,
       // 多语言支持
       translations: AppTranslations(),
       locale: _getLocaleFromLanguageCode(languageController.currentLanguage.value),
@@ -124,6 +109,9 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        return KeyboardDismissOnTap(child: child ?? const SizedBox.shrink());
+      },
     ));
   }
   

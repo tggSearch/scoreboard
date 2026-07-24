@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/basketball_controller.dart';
 import 'package:common_ui/common_ui.dart';
+import '../../../core/theme/app_colors.dart';
 
 class BasketballPage extends BaseView<BasketballController> {
   const BasketballPage({super.key});
@@ -24,9 +25,7 @@ class BasketballPage extends BaseView<BasketballController> {
       if (controller.isAppBarVisible) {
         return AppBar(
           title: Text('basketball_scoring'.tr),
-          backgroundColor: const Color(0xFF4CAF50),
-          foregroundColor: Colors.white,
-          elevation: 0,
+          
           actions: [
             // 横屏模式切换
             IconButton(
@@ -55,9 +54,7 @@ class BasketballPage extends BaseView<BasketballController> {
     // 竖屏模式下显示正常AppBar
     return AppBar(
         title: Text('basketball_scoring'.tr),
-        backgroundColor: const Color(0xFF4CAF50),
-        foregroundColor: Colors.white,
-        elevation: 0,
+        
         actions: [
           // 横屏模式切换
           IconButton(
@@ -191,8 +188,9 @@ class BasketballPage extends BaseView<BasketballController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
@@ -213,7 +211,7 @@ class BasketballPage extends BaseView<BasketballController> {
                 children: [
                   Icon(
                     controller.isTimerRunning ? Icons.pause : Icons.play_arrow,
-                    color: const Color(0xFF4CAF50),
+                    color: AppColors.primary,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -228,7 +226,7 @@ class BasketballPage extends BaseView<BasketballController> {
                   const SizedBox(width: 8),
                   Icon(
                     Icons.timer,
-                    color: const Color(0xFF4CAF50),
+                    color: AppColors.primary,
                     size: 20,
                   ),
                 ],
@@ -256,7 +254,7 @@ class BasketballPage extends BaseView<BasketballController> {
                 ),
                 label: Text(controller.isTimerRunning ? 'pause'.tr : 'start'.tr),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                 ),
               )),
@@ -289,18 +287,17 @@ class BasketballPage extends BaseView<BasketballController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isLeading ? const Color(0xFF4CAF50) : Colors.grey[300]!,
+          color: isLeading ? AppColors.primary : AppColors.border,
           width: isLeading ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -317,7 +314,7 @@ class BasketballPage extends BaseView<BasketballController> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isLeading ? const Color(0xFF4CAF50) : Colors.black87,
+                  color: isLeading ? AppColors.primary : Colors.black87,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -333,18 +330,14 @@ class BasketballPage extends BaseView<BasketballController> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 16),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey[200]!),
               ),
-              child: Text(
-                score.toString(),
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF4CAF50),
-                ),
-                textAlign: TextAlign.center,
+              child: AppScoreDisplay(
+                score: score.toString(),
+                fontSize: 36,
+                color: AppColors.primary,
               ),
             ),
           ),
@@ -356,10 +349,10 @@ class BasketballPage extends BaseView<BasketballController> {
   Widget _buildLandscapeLayout() {
     return GestureDetector(
       onTap: () {
-        // 点击屏幕切换导航栏显示状态
+        KeyboardDismiss.dismiss();
         controller.toggleAppBarVisibility();
       },
-      behavior: HitTestBehavior.opaque, // 确保点击事件能被捕获
+      behavior: HitTestBehavior.opaque,
       child: Container(
         width: double.infinity,
         height: double.infinity,
@@ -581,7 +574,7 @@ class BasketballPage extends BaseView<BasketballController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -752,7 +745,7 @@ class BasketballPage extends BaseView<BasketballController> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
             child: Text('confirm'.tr),
@@ -771,7 +764,7 @@ class BasketballPage extends BaseView<BasketballController> {
         Get.back();
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         minimumSize: const Size(0, 32),
@@ -797,7 +790,7 @@ class BasketballPage extends BaseView<BasketballController> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -1057,7 +1050,7 @@ class BasketballPage extends BaseView<BasketballController> {
             ListTile(
               leading: Icon(
                 controller.isVoiceEnabled ? Icons.volume_up : Icons.volume_off,
-                color: const Color(0xFF4CAF50),
+                color: AppColors.primary,
               ),
               title: Text('voice_announcement'.tr),
               subtitle: Text(controller.isVoiceEnabled ? 'enabled'.tr : 'disabled'.tr),
@@ -1067,14 +1060,14 @@ class BasketballPage extends BaseView<BasketballController> {
                   controller.toggleVoice();
                   Get.back();
                 },
-                activeColor: const Color(0xFF4CAF50),
+                activeColor: AppColors.primary,
               ),
             ),
             // Screen wake lock settings
             ListTile(
               leading: Icon(
                 controller.isScreenWakeLockEnabled ? Icons.wb_sunny : Icons.brightness_2,
-                color: const Color(0xFF4CAF50),
+                color: AppColors.primary,
               ),
               title: Text('screen_wake_lock'.tr),
               subtitle: Text(controller.isScreenWakeLockEnabled ? 'enabled'.tr : 'disabled'.tr),
@@ -1084,14 +1077,14 @@ class BasketballPage extends BaseView<BasketballController> {
                   controller.toggleScreenWakeLock();
                   Get.back();
                 },
-                activeColor: const Color(0xFF4CAF50),
+                activeColor: AppColors.primary,
               ),
             ),
             // Full screen settings
             ListTile(
               leading: Icon(
                 controller.isFullScreenEnabled ? Icons.fullscreen_exit : Icons.fullscreen,
-                color: const Color(0xFF4CAF50),
+                color: AppColors.primary,
               ),
               title: Text('full_screen_mode'.tr),
               subtitle: Text(controller.isFullScreenEnabled ? 'enabled'.tr : 'disabled'.tr),
@@ -1101,7 +1094,7 @@ class BasketballPage extends BaseView<BasketballController> {
                   controller.toggleFullScreen();
                   Get.back();
                     },
-                activeColor: const Color(0xFF4CAF50),
+                activeColor: AppColors.primary,
                   ),
             ),
           ],
@@ -1135,7 +1128,7 @@ class BasketballPage extends BaseView<BasketballController> {
             'reset_complete'.tr,
             'score_time_timer_reset'.tr,
             snackPosition: SnackPosition.TOP,
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: AppColors.primary,
             colorText: Colors.white,
             duration: const Duration(seconds: 2),
             borderRadius: 12,
@@ -1199,7 +1192,7 @@ class BasketballPage extends BaseView<BasketballController> {
             'reset_complete'.tr,
             'score_time_reset'.tr,
             snackPosition: SnackPosition.TOP,
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: AppColors.primary,
             colorText: Colors.white,
             duration: const Duration(seconds: 2),
             borderRadius: 12,

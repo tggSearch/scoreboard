@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 /// 应用内评分管理工具类
 class AppRatingManager {
@@ -107,7 +108,7 @@ class AppRatingManager {
               await _requestReview();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
             child: Text('rate_now'.tr),

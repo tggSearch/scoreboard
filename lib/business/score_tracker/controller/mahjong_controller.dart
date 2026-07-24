@@ -6,6 +6,7 @@ import '../../../core/data/game_result.dart';
 import '../../../core/utils/game_result_manager.dart';
 import '../../../core/utils/mahjong_config.dart';
 import 'package:common_ui/common_ui.dart';
+import '../../../core/theme/app_colors.dart';
 
 class MahjongController extends BaseController {
   // 游戏类型
@@ -400,13 +401,13 @@ class MahjongController extends BaseController {
       } else {
         announcement = '${'farmers_win'.tr}';
       }
-      announcement += '，${'final_scores'.tr}';
+      announcement += '${'comma_separator'.tr}${'final_scores'.tr}';
       final List<String> scoreParts = [];
       finalScores.forEach((playerName, score) {
         final scoreText = score >= 0 ? '$score' : '${'negative_prefix'.tr}${score.abs()}';
         scoreParts.add('$playerName${'is'.tr}$scoreText${'points_unit'.tr}');
       });
-      announcement += scoreParts.join('，');
+      announcement += scoreParts.join('comma_separator'.tr);
       voiceAnnouncer.announce(announcement);
     });
   }
@@ -442,7 +443,7 @@ class MahjongController extends BaseController {
       await _saveAllScores();
       
       // 语音播报 - 构建文本并播报
-      String announcement = '${playerNames[winnerIndex]} $winType';
+      String announcement = '${playerNames[winnerIndex]} ${winType.tr}';
       if (totalFans > 1) {
         announcement += ' $totalFans${'fans'.tr}';
       }
@@ -476,7 +477,7 @@ class MahjongController extends BaseController {
       await _saveAllScores();
       
       // 语音播报 - 构建文本并播报
-      String announcement = '${playerNames[winnerIndex]} $winType';
+      String announcement = '${playerNames[winnerIndex]} ${winType.tr}';
       if (totalFans > 1) {
         announcement += ' $totalFans${'fans'.tr}';
       }
@@ -523,7 +524,7 @@ class MahjongController extends BaseController {
       await _saveAllScores();
       
       // 语音播报 - 构建文本并播报
-      String announcement = '${playerNames[playerIndex]} $gangType';
+      String announcement = '${playerNames[playerIndex]} ${gangType.tr}';
       if (fans > 0) {
         announcement += ' $fans${'fans'.tr}';
       }
@@ -671,9 +672,9 @@ class MahjongController extends BaseController {
       
       // 语音播报
       if (scoreChange > 0) {
-        voiceAnnouncer.announce('manual_score_announce'.tr.replaceAll('{player}', playerNames[playerIndex]).replaceAll('{operation}', 'manual_add_score_description'.tr).replaceAll('{score}', scoreChange.toString()));
+        voiceAnnouncer.announce('manual_score_announce'.tr.replaceAll('{player}', playerNames[playerIndex]).replaceAll('{operation}', 'manual_score_add'.tr).replaceAll('{score}', scoreChange.toString()));
       } else if (scoreChange < 0) {
-        voiceAnnouncer.announce('manual_score_announce'.tr.replaceAll('{player}', playerNames[playerIndex]).replaceAll('{operation}', 'manual_subtract_score_description'.tr).replaceAll('{score}', (-scoreChange).toString()));
+        voiceAnnouncer.announce('manual_score_announce'.tr.replaceAll('{player}', playerNames[playerIndex]).replaceAll('{operation}', 'manual_score_subtract'.tr).replaceAll('{score}', (-scoreChange).toString()));
       }
       
       // 计分完成播报
@@ -720,7 +721,7 @@ class MahjongController extends BaseController {
         final playerIndex = rankings[i];
         final playerName = playerNames[playerIndex];
         final score = playerScores[playerIndex];
-        summary += 'ranking_summary'.tr.replaceAll('{rank}', (i + 1).toString()).replaceAll('{player}', playerName).replaceAll('{score_text}', '${score >= 0 ? '+' : ''}$score分');
+        summary += 'ranking_summary'.tr.replaceAll('{rank}', (i + 1).toString()).replaceAll('{player}', playerName).replaceAll('{score_text}', '${score >= 0 ? '+' : ''}$score${'points_unit'.tr}');
         if (i < rankings.length - 1) {
           summary += 'comma_separator'.tr;
         }
@@ -763,7 +764,7 @@ class MahjongController extends BaseController {
       'fans_config_save_success'.tr,
       '游戏结果已保存',
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );

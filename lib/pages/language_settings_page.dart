@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../core/controllers/language_controller.dart';
 import '../core/l10n/translation_manager.dart';
+import '../core/theme/app_colors.dart';
 
 class LanguageSettingsPage extends StatelessWidget {
   const LanguageSettingsPage({super.key});
@@ -11,11 +13,8 @@ class LanguageSettingsPage extends StatelessWidget {
     final languageController = Get.find<LanguageController>();
     
     return Scaffold(
-      appBar: AppBar(
-        title: Text('language'.tr),
-        backgroundColor: const Color(0xFF4CAF50),
-        foregroundColor: Colors.white,
-        elevation: 0,
+      appBar: AppAppBar(
+        titleText: 'language'.tr,
       ),
       body: Obx(() => ListView(
         padding: const EdgeInsets.all(16),
@@ -71,7 +70,7 @@ class LanguageSettingsPage extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade200,
+                    color: isSelected ? AppColors.primary : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(
@@ -88,7 +87,7 @@ class LanguageSettingsPage extends StatelessWidget {
                    language['nativeName']!,
                    style: TextStyle(
                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                     color: isSelected ? const Color(0xFF4CAF50) : Colors.black87,
+                     color: isSelected ? AppColors.primary : Colors.black87,
                    ),
                  ),
                 subtitle: Text(
@@ -101,7 +100,7 @@ class LanguageSettingsPage extends StatelessWidget {
                 trailing: isSelected
                     ? const Icon(
                         Icons.check_circle,
-                        color: Color(0xFF4CAF50),
+                        color: AppColors.primary,
                         size: 24,
                       )
                     : null,
@@ -112,7 +111,7 @@ class LanguageSettingsPage extends StatelessWidget {
                       'success'.tr,
                       '${'language'.tr} ${'update'.tr} ${'success'.tr}',
                       snackPosition: SnackPosition.TOP,
-                      backgroundColor: const Color(0xFF4CAF50),
+                      backgroundColor: AppColors.primary,
                       colorText: Colors.white,
                       duration: const Duration(seconds: 2),
                     );

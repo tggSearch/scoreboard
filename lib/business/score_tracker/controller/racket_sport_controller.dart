@@ -7,6 +7,7 @@ import '../../../core/base/base_controller.dart';
 import '../../../core/data/game_result.dart';
 import '../../../core/utils/game_result_manager.dart';
 import 'package:common_ui/common_ui.dart';
+import '../../../core/theme/app_colors.dart';
 
 class RacketSportRecord {
   final int team1Score;
@@ -320,7 +321,7 @@ class RacketSportController extends BaseController {
       _addRecord(team1NewScore, team2NewScore, 'manual_modify_score'.tr);
       
       // 语音播报
-              voiceAnnouncer.announce('manual_score_announce'.tr.replaceAll('{score1}', team1NewScore.toString()).replaceAll('{score2}', team2NewScore.toString()));
+              voiceAnnouncer.announce('racket_manual_scores_announce'.tr.replaceAll('{score1}', team1NewScore.toString()).replaceAll('{score2}', team2NewScore.toString()));
     }
     
     await _saveScores();
@@ -415,7 +416,7 @@ class RacketSportController extends BaseController {
       'save_success'.tr,
       'match_result_saved'.tr,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
     );

@@ -63,12 +63,7 @@ abstract class BaseView<T extends BaseController> extends GetView<T> {
           });
         }
         
-        return GestureDetector(
-          onTap: () {
-            // 点击页面其他地方时收起键盘
-            FocusScope.of(context).unfocus();
-          },
-          behavior: HitTestBehavior.opaque,
+        return KeyboardDismissOnTap(
           child: buildContent(context),
         );
       },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../core/l10n/translation_manager.dart';
 import '../core/controllers/language_controller.dart';
+import '../core/theme/app_colors.dart';
 
 class TranslationDebugPage extends StatelessWidget {
   const TranslationDebugPage({super.key});
@@ -13,7 +14,7 @@ class TranslationDebugPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('翻译调试'),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -204,7 +205,7 @@ class TranslationDebugPage extends StatelessWidget {
                         '翻译键',
                         '$key: $translation',
                         snackPosition: SnackPosition.TOP,
-                        backgroundColor: const Color(0xFF4CAF50),
+                        backgroundColor: AppColors.primary,
                         colorText: Colors.white,
                       );
                     },
@@ -254,7 +255,7 @@ class TranslationDebugPage extends StatelessWidget {
                     '翻译测试',
                     '$key: $translation',
                     snackPosition: SnackPosition.TOP,
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: AppColors.primary,
                     colorText: Colors.white,
                   );
                 },

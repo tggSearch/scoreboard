@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/basketball_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class BasketballHistoryPage extends BaseView<BasketballController> {
   const BasketballHistoryPage({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text('basketball'.tr + ' ' + 'history'.tr),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-      elevation: 0,
+    return AppAppBar(
+      titleText: 'basketball'.tr + ' ' + 'history'.tr,
       actions: [
         IconButton(
           onPressed: () {
@@ -28,25 +27,9 @@ class BasketballHistoryPage extends BaseView<BasketballController> {
   Widget buildContent(BuildContext context) {
     return Obx(() {
       if (controller.records.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.history,
-                size: 64,
-                color: Colors.grey,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'no_history_records'.tr,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
+        return AppEmptyState(
+          icon: Icons.history,
+          message: 'no_history_records'.tr,
         );
       }
 
@@ -66,7 +49,11 @@ class BasketballHistoryPage extends BaseView<BasketballController> {
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -76,7 +63,7 @@ class BasketballHistoryPage extends BaseView<BasketballController> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: AppColors.primary,
                   radius: 20,
                   child: const Icon(
                     Icons.sports_basketball,
@@ -132,7 +119,7 @@ class BasketballHistoryPage extends BaseView<BasketballController> {
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF4CAF50),
+                          color: AppColors.primary,
                         ),
                       ),
                     ],
@@ -162,7 +149,7 @@ class BasketballHistoryPage extends BaseView<BasketballController> {
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF4CAF50),
+                          color: AppColors.primary,
                         ),
                       ),
                     ],

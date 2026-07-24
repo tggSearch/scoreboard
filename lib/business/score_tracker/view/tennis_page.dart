@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/tennis_controller.dart';
 import 'package:common_ui/common_ui.dart';
+import '../../../core/theme/app_colors.dart';
 
 class TennisPage extends BaseView<TennisController> {
   const TennisPage({super.key});
@@ -24,9 +25,7 @@ class TennisPage extends BaseView<TennisController> {
       if (controller.isAppBarVisibleValue) {
         return AppBar(
           title: Text('tennis_scoring'.tr),
-          backgroundColor: const Color(0xFF4CAF50),
-          foregroundColor: Colors.white,
-          elevation: 0,
+          
           actions: [
             // 横屏模式切换
             IconButton(
@@ -48,9 +47,7 @@ class TennisPage extends BaseView<TennisController> {
     // 竖屏模式下的AppBar
     return AppBar(
       title: Text('tennis_scoring'.tr),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-      elevation: 0,
+      
       actions: [
         // 横屏模式切换
         IconButton(
@@ -332,7 +329,7 @@ class TennisPage extends BaseView<TennisController> {
                   icon: const Icon(Icons.sports_tennis),
                   label: Text('team_score_button'.tr.replaceAll('{team}', controller.team1Name.value)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
@@ -351,7 +348,7 @@ class TennisPage extends BaseView<TennisController> {
                   icon: const Icon(Icons.sports_tennis),
                   label: Text('team_score_button'.tr.replaceAll('{team}', controller.team2Name.value)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
@@ -416,6 +413,7 @@ class TennisPage extends BaseView<TennisController> {
   Widget _buildLandscapeLayout() {
     return GestureDetector(
       onTap: () {
+        KeyboardDismiss.dismiss();
         controller.toggleAppBarVisibility();
       },
       behavior: HitTestBehavior.opaque,
@@ -643,7 +641,7 @@ class TennisPage extends BaseView<TennisController> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
             child: Text('confirm'.tr),
@@ -718,7 +716,7 @@ class TennisPage extends BaseView<TennisController> {
             'reset_complete'.tr,
             'score_time_timer_reset'.tr,
             snackPosition: SnackPosition.TOP,
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: AppColors.primary,
             colorText: Colors.white,
             duration: const Duration(seconds: 2),
           );

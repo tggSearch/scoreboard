@@ -1,47 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/tennis_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class TennisHistoryPage extends BaseView<TennisController> {
   const TennisHistoryPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('tennis_history'.tr),
-        backgroundColor: const Color(0xFF4CAF50),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: buildContent(context),
-    );
+  PreferredSizeWidget? buildAppBar(BuildContext context) {
+    return AppAppBar(titleText: 'tennis_history'.tr);
   }
 
   @override
   Widget buildContent(BuildContext context) {
     return Obx(() {
       if (controller.records.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.history,
-                size: 64,
-                color: Colors.grey[400],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'no_records'.tr,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
+        return AppEmptyState(
+          icon: Icons.history,
+          message: 'no_records'.tr,
         );
       }
 
@@ -52,93 +30,26 @@ class TennisHistoryPage extends BaseView<TennisController> {
           final record = controller.records[index];
           final isLastRecord = index == controller.records.length - 1;
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isLastRecord ? Colors.green[300]! : Colors.grey[300]!,
-                width: isLastRecord ? 2 : 1,
+          return AppHistoryListTile(
+            index: index,
+            title: record.description,
+            subtitle:
+                '${controller.team1Name.value}: ${record.team1Score}  ·  ${controller.team2Name.value}: ${record.team2Score}\n${_formatDateTime(record.timestamp)}',
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: isLastRecord
+                    ? AppColors.primary.withValues(alpha: 0.1)
+                    : AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(6),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+              child: Text(
+                '${record.team1Score}-${record.team2Score}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isLastRecord ? AppColors.primary : AppColors.textSecondary,
                 ),
-              ],
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(16),
-              title: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      record.description,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isLastRecord ? Colors.green[100] : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      '${record.team1Score}-${record.team2Score}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: isLastRecord ? Colors.green[700] : Colors.grey[700],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '${controller.team1Name.value}: ${record.team1Score}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.blue[700],
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          '${controller.team2Name.value}: ${record.team2Score}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.red[700],
-                          ),
-                          textAlign: TextAlign.end,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatDateTime(record.timestamp),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-              trailing: Icon(
-                Icons.sports_tennis,
-                color: Colors.grey[400],
               ),
             ),
           );
@@ -161,4 +72,4 @@ class TennisHistoryPage extends BaseView<TennisController> {
       return 'just_now'.tr;
     }
   }
-} 
+}

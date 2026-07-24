@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/texas_holdem_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class TexasHoldemHistoryPage extends BaseView<TexasHoldemController> {
   const TexasHoldemHistoryPage({super.key});
@@ -9,30 +11,28 @@ class TexasHoldemHistoryPage extends BaseView<TexasHoldemController> {
   @override
   Widget buildContent(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF4CAF50),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF4CAF50),
-        elevation: 0,
-        title: const Text(
-          '德州扑克历史',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      backgroundColor: AppColors.primary,
+      appBar: AppAppBar(
+        titleText: '德州扑克历史',
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Get.back(),
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
+          ],
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -55,7 +55,7 @@ class TexasHoldemHistoryPage extends BaseView<TexasHoldemController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[300]!),
       ),
@@ -102,7 +102,7 @@ class TexasHoldemHistoryPage extends BaseView<TexasHoldemController> {
                           isExpanded ? '收起' : '展开',
                           style: TextStyle(
                             fontSize: 12,
-                            color: const Color(0xFF4CAF50),
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
@@ -174,7 +174,7 @@ class TexasHoldemHistoryPage extends BaseView<TexasHoldemController> {
   Widget _buildDetailedHistory() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[300]!),
       ),
@@ -236,7 +236,7 @@ class TexasHoldemHistoryPage extends BaseView<TexasHoldemController> {
                 width: 24,
                 height: 24,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.primary,
                   shape: BoxShape.circle,
                 ),
                 child: Center(

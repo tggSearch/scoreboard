@@ -4,6 +4,7 @@ import '../../../core/base/base_view.dart';
 import '../controller/bridge_controller.dart';
 import 'package:common_ui/common_ui.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/theme/app_colors.dart';
 
 class BridgePage extends BaseView<BridgeController> {
   const BridgePage({super.key});
@@ -13,8 +14,8 @@ class BridgePage extends BaseView<BridgeController> {
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text('bridge'.tr),
+    return AppAppBar(
+      titleText: 'bridge'.tr,
       actions: [
         // 语音播报开关
         Obx(() => IconButton(
@@ -501,37 +502,11 @@ class BridgePage extends BaseView<BridgeController> {
 
   // 悬浮的结束按钮
   Widget _buildFloatingEndButton() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () => controller.endRound(),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: Text(
-            'end_round'.tr,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+    return AppButton(
+      label: 'end_round'.tr,
+      icon: Icons.flag_rounded,
+      expanded: true,
+      onPressed: () => controller.endRound(),
     );
   }
 

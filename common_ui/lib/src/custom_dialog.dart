@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'ui_tokens.dart';
+import 'keyboard_dismiss.dart';
+import 'dialog_navigator.dart';
 
 class CustomDialog extends StatelessWidget {
   final String title;
@@ -23,11 +26,11 @@ class CustomDialog extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         // 点击Dialog外部区域时收起键盘
-        FocusScope.of(context).unfocus();
+        KeyboardDismiss.dismiss();
       },
       child: Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(UiRadius.lg),
         ),
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: GestureDetector(
@@ -44,12 +47,12 @@ class CustomDialog extends StatelessWidget {
               children: [
                 // 标题栏
                 Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF4CAF50),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
+                  padding: const EdgeInsets.all(UiSpacing.xl),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(UiRadius.lg),
+                      topRight: Radius.circular(UiRadius.lg),
                     ),
                   ),
                   child: Row(
@@ -118,15 +121,8 @@ class CustomDialog extends StatelessWidget {
     );
   }
 
-  static void close(BuildContext context) {
-    // 嵌套弹窗模式：只关闭当前弹窗
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
-    // 普通弹窗模式：关闭当前弹窗（默认行为）
-    else {
-      Navigator.of(context).pop();
-    }
+  static void close(BuildContext context, [dynamic result]) {
+    DialogNavigator.close(result, context);
   }
 }
 
@@ -170,8 +166,11 @@ class CustomInputDialog extends StatelessWidget {
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderRadius: BorderRadius.circular(UiRadius.md),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ),
             ),
             filled: true,
             fillColor: Colors.grey[50],
@@ -199,10 +198,10 @@ class CustomInputDialog extends StatelessWidget {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(UiRadius.md),
             ),
           ),
           child: Text('confirm'.tr),
@@ -362,10 +361,10 @@ class CustomMultiInputDialog extends StatelessWidget {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(UiRadius.md),
             ),
           ),
           child: Text('confirm'.tr),

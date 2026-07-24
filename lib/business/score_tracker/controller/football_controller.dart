@@ -9,6 +9,7 @@ import '../../../core/base/base_controller.dart';
 import '../../../core/data/game_result.dart';
 import '../../../core/utils/game_result_manager.dart';
 import 'package:common_ui/common_ui.dart';
+import '../../../core/theme/app_colors.dart';
 
 class FootballController extends BaseController {
   // 时间相关
@@ -382,7 +383,7 @@ class FootballController extends BaseController {
           'save_success'.tr,
           'match_result_saved'.tr,
           snackPosition: SnackPosition.TOP,
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: AppColors.primary,
           colorText: Colors.white,
         );
       } else {
@@ -565,7 +566,7 @@ class FootballController extends BaseController {
       'football_goal_message'.tr.replaceAll('{team}', teamName).replaceAll('{score}', scoreText).replaceAll('{score1}', team1Score.toString()).replaceAll('{score2}', team2Score.toString()),
       duration: const Duration(seconds: 2),
       snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50),
+      backgroundColor: AppColors.primary,
       colorText: Colors.white,
     );
   }

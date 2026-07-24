@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:common_ui/common_ui.dart';
 import 'package:get/get.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/racket_sport_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class RacketSportPage extends BaseView<RacketSportController> {
   const RacketSportPage({super.key});
@@ -23,9 +25,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
       if (controller.isAppBarVisibleValue) {
         return AppBar(
           title: Text('${controller.sportName}${'scoring'.tr}'),
-          backgroundColor: const Color(0xFF4CAF50),
-          foregroundColor: Colors.white,
-          elevation: 0,
+          
           actions: [
             // 横屏模式切换
             IconButton(
@@ -47,9 +47,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
     // 竖屏模式下的AppBar
     return AppBar(
       title: Text('${controller.sportName}${'scoring'.tr}'),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-      elevation: 0,
+      
       actions: [
         // 横屏模式切换
         IconButton(
@@ -125,10 +123,10 @@ class RacketSportPage extends BaseView<RacketSportController> {
   Widget _buildLandscapeLayout() {
     return GestureDetector(
       onTap: () {
-        // 点击屏幕切换导航栏显示状态
+        KeyboardDismiss.dismiss();
         controller.toggleAppBarVisibility();
       },
-      behavior: HitTestBehavior.opaque, // 确保点击事件能被捕获
+      behavior: HitTestBehavior.opaque,
       child: Container(
         width: double.infinity,
         height: double.infinity,
@@ -169,7 +167,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF4CAF50),
+              color: AppColors.primary,
             ),
           ),
           const SizedBox(height: 8),
@@ -216,7 +214,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
                       controller.setScoreSystem(score);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isSelected ? const Color(0xFF4CAF50) : Colors.grey.shade50,
+                      backgroundColor: isSelected ? AppColors.primary : Colors.grey.shade50,
                       foregroundColor: isSelected ? Colors.white : Colors.black87,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -248,7 +246,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF4CAF50)),
+        border: Border.all(color: AppColors.primary),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -265,7 +263,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
                   style: const TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF4CAF50),
+                    color: AppColors.primary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -277,7 +275,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
             style: TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF4CAF50),
+              color: AppColors.primary,
             ),
           ),
           // 队伍2分数（可点击修改）
@@ -292,7 +290,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
                   style: const TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF4CAF50),
+                    color: AppColors.primary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -417,9 +415,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
-                foregroundColor: Colors.white,
-                elevation: 0,
+                
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 minimumSize: const Size(double.infinity, 48),
                 shape: RoundedRectangleBorder(
@@ -517,7 +513,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
               Get.back();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
             child: Text('confirm'.tr),
@@ -562,7 +558,7 @@ class RacketSportPage extends BaseView<RacketSportController> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
             child: Text('confirm'.tr),

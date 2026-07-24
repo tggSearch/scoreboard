@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'ui_tokens.dart';
 
 class CommonWidgets {
   /// Custom button with loading state
@@ -17,10 +18,10 @@ class CommonWidgets {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: textColor,
+          backgroundColor: backgroundColor ?? UiColors.primary,
+          foregroundColor: textColor ?? Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(UiRadius.md),
           ),
         ),
         child: isLoading
@@ -57,7 +58,7 @@ class CommonWidgets {
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(UiRadius.md),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,

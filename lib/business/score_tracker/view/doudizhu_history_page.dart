@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/mahjong_controller.dart';
+import '../../../core/theme/app_colors.dart';
 
 class DoudizhuHistoryPage extends BaseView<MahjongController> {
   const DoudizhuHistoryPage({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
-    return AppBar(
-      title: const Text('斗地主历史记录'),
-      backgroundColor: const Color(0xFF4CAF50),
-      foregroundColor: Colors.white,
-      elevation: 0,
+    return AppAppBar(
+      titleText: '斗地主历史记录',
     );
   }
 
@@ -20,25 +19,9 @@ class DoudizhuHistoryPage extends BaseView<MahjongController> {
   Widget buildContent(BuildContext context) {
     return Obx(() {
       if (controller.records.isEmpty) {
-        return const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.history,
-                size: 64,
-                color: Colors.grey,
-              ),
-              SizedBox(height: 16),
-              Text(
-                '暂无历史记录',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
+        return AppEmptyState(
+          icon: Icons.history,
+          message: '暂无历史记录',
         );
       }
 

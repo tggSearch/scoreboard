@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../../../core/base/base_view.dart';
 import '../controller/bridge_controller.dart';
 
@@ -11,25 +12,17 @@ class BridgeHistoryPage extends BaseView<BridgeController> {
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text('bridge_history'.tr),
-    );
+    return AppAppBar(titleText: 'bridge_history'.tr);
   }
 
   @override
   Widget buildContent(BuildContext context) {
     return Obx(() {
       if (controller.records.isEmpty) {
-              return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.history, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text('no_records'.tr, style: const TextStyle(fontSize: 18, color: Colors.grey)),
-          ],
-        ),
-      );
+        return AppEmptyState(
+          icon: Icons.history,
+          message: 'no_records'.tr,
+        );
       }
 
       return ListView.builder(

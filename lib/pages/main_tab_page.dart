@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:common_ui/common_ui.dart';
 import '../core/base/base_view.dart';
 import '../core/base/base_controller.dart';
 import '../business/history_viewer/view/history_viewer_page.dart';
 import '../business/user_profile/view/user_profile_page.dart';
 import '../core/data/score_types.dart';
+import '../core/data/game_icons.dart';
+import '../core/widgets/game_icon.dart';
 import '../core/utils/most_used_manager.dart';
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_spacing.dart';
+import '../core/theme/app_radius.dart';
+import '../core/theme/app_shadows.dart';
 
 class MainTabController extends BaseController {
   final _currentIndex = 0.obs;
@@ -107,19 +114,19 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: const Icon(Icons.dashboard, size: 24),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -135,7 +142,7 @@ class _HomePageState extends State<HomePage> {
                   'professional_score_system'.tr,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white70,
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -143,8 +150,8 @@ class _HomePageState extends State<HomePage> {
             const Spacer(),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: IconButton(
                 icon: const Icon(Icons.person, color: Colors.white),
@@ -155,24 +162,18 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(20),
+            bottom: Radius.circular(AppRadius.xl),
           ),
         ),
       ),
-      body: GestureDetector(
-        onTap: () {
-          // 点击其他地方时收起键盘
-          FocusScope.of(context).unfocus();
-        },
-        behavior: HitTestBehavior.opaque,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
+      body: KeyboardDismissScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Welcome card
@@ -200,7 +201,6 @@ class _HomePageState extends State<HomePage> {
               ],
             ],
           ),
-        ),
       ),
     );
   }
@@ -208,21 +208,15 @@ class _HomePageState extends State<HomePage> {
   Widget _buildWelcomeCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xxl),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
+          colors: AppColors.heroGradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        boxShadow: AppShadows.primaryGlow(AppColors.primary),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,8 +269,8 @@ class _HomePageState extends State<HomePage> {
                 final index = entry.key;
                 final gameId = entry.value;
                 return _buildStatCard(
+                  gameId,
                   MostUsedManager.getGameDisplayName(gameId),
-                  MostUsedManager.getGameEmoji(gameId),
                   Color(MostUsedManager.getGameColor(gameId)),
                   () => _onGameClick(gameId),
                 );
@@ -288,59 +282,24 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildStatCard(String title, String emoji, Color color, VoidCallback onTap) {
+  Widget _buildStatCard(String gameId, String title, Color color, VoidCallback onTap) {
     return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-                  child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  emoji,
-                  style: const TextStyle(fontSize: 20),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: _GlassStatTile(
+          title: title,
+          icon: _gameIcon(gameId, size: 24, color: Colors.white),
+          onTap: onTap,
         ),
       ),
+    );
+  }
+
+  Widget _gameIcon(String gameId, {double size = 20, Color? color}) {
+    return GameIcon(
+      assetPath: GameIcons.assetOrDefault(gameId),
+      size: size,
+      color: color ?? Color(MostUsedManager.getGameColor(gameId)),
     );
   }
 
@@ -348,103 +307,30 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.flash_on,
-                color: Color(0xFF4CAF50),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'quick_start'.tr,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-          ],
+        AppSectionHeader(
+          icon: Icons.flash_on,
+          title: 'quick_start'.tr,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
         SizedBox(
-          height: 100, // Reduced height
+          height: 100,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
               'basketball',
-              'football', 
+              'football',
               'badminton',
               'mahjong',
               'texas_holdem',
               'pingpong',
             ].map((gameId) {
-              return Container(
-                width: 100, // Changed to 100, equal to height
-                height: 100, // Keep 100, equal to width
-                margin: const EdgeInsets.only(right: 16),
-                child: InkWell(
+              return Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.lg),
+                child: AppGameTile(
+                  icon: _gameIcon(gameId, size: 28),
+                  label: MostUsedManager.getGameDisplayName(gameId),
+                  accentColor: Color(MostUsedManager.getGameColor(gameId)),
                   onTap: () => _onGameClick(gameId),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(MostUsedManager.getGameColor(gameId)).withOpacity(0.1),
-                          Color(MostUsedManager.getGameColor(gameId)).withOpacity(0.05),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Color(MostUsedManager.getGameColor(gameId)).withOpacity(0.2),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8), // Restore original padding
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            MostUsedManager.getGameEmoji(gameId),
-                            style: const TextStyle(fontSize: 20), // Restore original font size
-                          ),
-                        ),
-                        const SizedBox(height: 6), // Restore original spacing
-                        Text(
-                          MostUsedManager.getGameDisplayName(gameId),
-                          style: const TextStyle(
-                            fontSize: 12, // Restore original font size
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               );
             }).toList(),
@@ -456,59 +342,62 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSearchSection(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      height: 52,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.sm,
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
+          const Padding(
+            padding: EdgeInsets.only(left: 16, right: 4),
             child: Icon(
-              Icons.search,
-              color: const Color(0xFF4CAF50),
-              size: 20,
+              Icons.search_rounded,
+              color: AppColors.textMuted,
+              size: 22,
             ),
           ),
-          const SizedBox(width: 16),
           Expanded(
             child: TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
+              textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: 'search_game_types'.tr,
+                filled: false,
                 border: InputBorder.none,
-                hintStyle: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                hintStyle: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
           if (_isSearching)
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
               child: IconButton(
-                icon: const Icon(Icons.clear, color: Colors.grey),
+                icon: const Icon(Icons.close_rounded, size: 20),
+                color: AppColors.textMuted,
+                splashRadius: 20,
                 onPressed: () {
                   _searchController.clear();
                   _onSearchChanged('');
+                  KeyboardDismiss.dismiss();
                 },
               ),
             ),
@@ -519,17 +408,9 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSearchResults(BuildContext context) {
     if (_searchResults.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Text(
-            'no_search_results'.tr,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-          ),
-        ),
+      return AppEmptyState(
+        icon: Icons.search_off,
+        message: 'no_search_results'.tr,
       );
     }
 
@@ -541,19 +422,17 @@ class _HomePageState extends State<HomePage> {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
         Wrap(
           spacing: 20,
           runSpacing: 16,
           children: _searchResults.map((type) {
-            return _buildScoreItem(
-              context,
-              type.icon,
-              type.displayName,
-              const Color(0xFF4CAF50),
+            return SizedBox(
+              width: (MediaQuery.of(context).size.width - 80) / 3,
+              child: _buildScoreItem(context, type),
             );
           }).toList(),
         ),
@@ -570,12 +449,12 @@ class _HomePageState extends State<HomePage> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withOpacity(0.1),
+                color: AppColors.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
                 Icons.star,
-                color: Color(0xFF4CAF50),
+                color: AppColors.primary,
                 size: 20,
               ),
             ),
@@ -609,30 +488,15 @@ class _HomePageState extends State<HomePage> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.commonTypes[0].icon,
-                      ScoreTypesData.commonTypes[0].displayName,
-                      const Color(0xFF4CAF50),
-                    ),
+                    child: _buildScoreItem(context, ScoreTypesData.commonTypes[0]),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.commonTypes[1].icon,
-                      ScoreTypesData.commonTypes[1].displayName,
-                      const Color(0xFF4CAF50),
-                    ),
+                    child: _buildScoreItem(context, ScoreTypesData.commonTypes[1]),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.commonTypes[2].icon,
-                      ScoreTypesData.commonTypes[2].displayName,
-                      const Color(0xFF4CAF50),
-                    ),
+                    child: _buildScoreItem(context, ScoreTypesData.commonTypes[2]),
                   ),
                 ],
               ),
@@ -640,12 +504,7 @@ class _HomePageState extends State<HomePage> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.commonTypes[3].icon,
-                      ScoreTypesData.commonTypes[3].displayName,
-                      const Color(0xFF4CAF50),
-                    ),
+                    child: _buildScoreItem(context, ScoreTypesData.commonTypes[3]),
                   ),
                 ],
               ),
@@ -660,106 +519,35 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.trending_up,
-                color: Colors.orange,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'popular_scoring'.tr,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-          ],
+        AppSectionHeader(
+          icon: Icons.trending_up,
+          title: 'popular_scoring'.tr,
+          iconColor: AppColors.warning,
+          iconBackgroundColor: AppColors.warning.withValues(alpha: 0.1),
         ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+        const SizedBox(height: AppSpacing.lg),
+        AppSurfaceCard(
           child: Column(
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.popularTypes[0].icon,
-                      ScoreTypesData.popularTypes[0].displayName,
-                      const Color(0xFF4CAF50),
+                  for (int i = 0; i < 3; i++) ...[
+                    if (i > 0) const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildScoreItem(context, ScoreTypesData.popularTypes[i]),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.popularTypes[1].icon,
-                      ScoreTypesData.popularTypes[1].displayName,
-                      const Color(0xFF4CAF50),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.popularTypes[2].icon,
-                      ScoreTypesData.popularTypes[2].displayName,
-                      const Color(0xFF4CAF50),
-                    ),
-                  ),
+                  ],
                 ],
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.popularTypes[3].icon,
-                      ScoreTypesData.popularTypes[3].displayName,
-                      const Color(0xFF4CAF50),
+                  for (int i = 3; i < 6; i++) ...[
+                    if (i > 3) const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildScoreItem(context, ScoreTypesData.popularTypes[i]),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.popularTypes[4].icon,
-                      ScoreTypesData.popularTypes[4].displayName,
-                      const Color(0xFF4CAF50),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildScoreItem(
-                      context,
-                      ScoreTypesData.popularTypes[5].icon,
-                      ScoreTypesData.popularTypes[5].displayName,
-                      const Color(0xFF4CAF50),
-                    ),
-                  ),
+                  ],
                 ],
               ),
             ],
@@ -773,61 +561,29 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.category,
-                color: Colors.purple,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'all_categories'.tr,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-          ],
+        AppSectionHeader(
+          icon: Icons.category,
+          title: 'all_categories'.tr,
+          iconColor: const Color(0xFF9C27B0),
+          iconBackgroundColor: const Color(0xFF9C27B0).withValues(alpha: 0.1),
         ),
-        const SizedBox(height: 16),
-        
+        const SizedBox(height: AppSpacing.lg),
         ...ScoreTypesData.groupedTypes.entries.map((entry) {
           return Column(
             children: [
               _buildCategoryGroup(context, entry.key, entry.value),
               if (entry.key != ScoreTypesData.groupedTypes.keys.last)
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
             ],
           );
-        }).toList(),
+        }),
       ],
     );
   }
 
   Widget _buildCategoryGroup(BuildContext context, String categoryName, List<ScoreType> items) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return AppSurfaceCard(
+      margin: const EdgeInsets.only(bottom: AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -836,27 +592,27 @@ class _HomePageState extends State<HomePage> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
                   Icons.folder,
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.primary,
                   size: 16,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 categoryName,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF4CAF50),
+                  color: AppColors.primary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Column(
             children: [
               for (int i = 0; i < items.length; i += 3)
@@ -865,20 +621,14 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       for (int j = 0; j < 3 && i + j < items.length; j++) ...[
                         Expanded(
-                          child: _buildScoreItem(
-                            context,
-                            items[i + j].icon,
-                            items[i + j].displayName,
-                            const Color(0xFF4CAF50),
-                          ),
+                          child: _buildScoreItem(context, items[i + j]),
                         ),
                         if (j < 2 && i + j + 1 < items.length)
                           const SizedBox(width: 12),
                       ],
                     ],
                   ),
-                  if (i + 3 < items.length)
-                    const SizedBox(height: 12),
+                  if (i + 3 < items.length) const SizedBox(height: 12),
                 ],
             ],
           ),
@@ -887,52 +637,77 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildScoreItem(BuildContext context, IconData icon, String name, Color color) {
-    return InkWell(
-      onTap: () async {
-        // Navigate to different pages based on score type
-        String gameId = '';
-        
-        // Find corresponding id by displayName
-        for (var type in ScoreTypesData.allTypes) {
-          if (type.displayName == name) {
-            gameId = type.id;
-            break;
-          }
-        }
-        
-        if (gameId.isNotEmpty) {
-          await _onGameClick(gameId);
-        } else {
-          // Other game types not available yet
-          Get.snackbar('tip'.tr, 'feature_not_available'.tr);
-        }
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
+  Widget _buildScoreItem(BuildContext context, ScoreType type) {
+    final accentColor = Color(MostUsedManager.getGameColor(type.id));
+    return AppScoreChip(
+      icon: _gameIcon(type.id, size: 18, color: accentColor),
+      label: type.displayName,
+      accentColor: accentColor,
+      onTap: () => _onGameClick(type.id),
+    );
+  }
+}
+
+class _GlassStatTile extends StatefulWidget {
+  final String title;
+  final Widget icon;
+  final VoidCallback onTap;
+
+  const _GlassStatTile({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  State<_GlassStatTile> createState() => _GlassStatTileState();
+}
+
+class _GlassStatTileState extends State<_GlassStatTile> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _pressed ? 0.95 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
+                child: SizedBox(width: 24, height: 24, child: widget.icon),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
