@@ -36,6 +36,11 @@ migrate_working_dir/
 # iOS related
 Pods/
 build/
+ios/ci_provisioning_profile.env
+
+# Jenkins secrets (keep real file on build node only)
+jenkins_secrets.env
+**/jenkins_secrets.env
 
 # Symbolication related
 app.*.symbols

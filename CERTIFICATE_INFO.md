@@ -17,6 +17,25 @@
 - **APK 文件**: `build/app/outputs/flutter-apk/app-release.apk`
 - **AAB 文件**: `build/app/outputs/bundle/release/app-release.aab`
 
+## iOS 签名（Jenkins / 本地打包）
+
+- **Bundle ID**: `com.qualrb.scoreBoardPro`
+- **Team ID**: `483V3ZF35S`
+- **描述文件**: `scoreboard`（App Store Connect 类型）
+- **描述文件路径**: `~/Downloads/scoreboard.mobileprovision` 或 `${CERT_DIR}/scoreboard.mobileprovision`
+- **ExportOptions**: `ios/ExportOptions.plist`
+
+```bash
+# 安装描述文件并同步 Xcode / ExportOptions
+./jenkins_ios_signing_setup.sh
+
+# 构建 IPA
+./jenkins_build.sh -t ios -m release
+
+# 构建全部平台
+./jenkins_build.sh -t all -m release
+```
+
 ## 构建命令
 
 ```bash
