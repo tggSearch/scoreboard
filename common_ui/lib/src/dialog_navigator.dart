@@ -32,6 +32,8 @@ class DialogNavigator {
 
   static void closeThen(void Function() then, [BuildContext? context]) {
     close(null, context);
-    Future.microtask(then);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      then();
+    });
   }
 }

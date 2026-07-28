@@ -260,6 +260,13 @@ pipeline {
             steps {
                 sh '''
                     export PATH="/opt/homebrew/bin:/usr/local/bin:$FLUTTER_HOME/bin:$HOME/.rbenv/shims:$HOME/.rvm/bin:$PATH"
+                    if [ -f "${JENKINS_SECRETS_FILE}" ]; then
+                        set -a
+                        # shellcheck source=/dev/null
+                        source "${JENKINS_SECRETS_FILE}"
+                        set +a
+                        echo "已加载 ${JENKINS_SECRETS_FILE}"
+                    fi
                     ./jenkins_build.sh --prepare-android-signing
                 '''
             }

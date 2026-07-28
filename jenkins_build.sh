@@ -412,21 +412,88 @@ parse_version() {
 
 # ==================== Android 签名准备 ====================
 
+materialize_keystore_from_env() {
+    local dest="$PROJECT_ROOT/android/app/upload-keystore.jks"
+    if [ -f "$dest" ]; then
+        return 0
+    fi
+
+    if [ -n "${ANDROID_UPLOAD_KEYSTORE_BASE64:-}" ]; then
+        log_info "从 ANDROID_UPLOAD_KEYSTORE_BASE64 写入 keystore..."
+        mkdir -p "$(dirname "$dest")"
+        printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$dest"
+        log_success "已从环境变量生成 upload-keystore.jks"
+        return 0
+    fi
+
+    if [ -n "${ANDROID_UPLOAD_KEYSTORE_DATA:-}" ]; then
+        log_info "从 ANDROID_UPLOAD_KEYSTORE_DATA 写入 keystore..."
+        mkdir -p "$(dirname "$dest")"
+        printf '%s' "$ANDROID_UPLOAD_KEYSTORE_DATA" | base64 --decode > "$dest"
+        log_success "已从环境变量生成 upload-keystore.jks"
+        return 0
+    fi
+
+    return 1
+}
+
+collect_keystore_candidates() {
+    ANDROID_KEYSTORE_CANDIDATES=()
+
+    local static_candidates=(
+        "${ANDROID_UPLOAD_KEYSTORE:-}"
+        "${JENKINS_UPLOAD_KEYSTORE:-}"
+        "${CERT_DIR}/upload-keystore.jks"
+        "${CERT_DIR}/scoreboard-upload-keystore.jks"
+        "${PROJECT_ROOT}/certs/upload-keystore.jks"
+        "${PROJECT_ROOT}/android/app/upload-keystore.jks"
+        "/Users/dan/Desktop/code/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
+        "${HOME}/Desktop/code/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
+        "/Users/dan/Desktop/texas-rate/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
+    )
+
+    local candidate
+    for candidate in "${static_candidates[@]}"; do
+        if [ -n "$candidate" ]; then
+            ANDROID_KEYSTORE_CANDIDATES+=("$candidate")
+        fi
+    done
+
+    if [ -d "$CERT_DIR" ]; then
+        while IFS= read -r candidate; do
+            ANDROID_KEYSTORE_CANDIDATES+=("$candidate")
+        done < <(find "$CERT_DIR" -maxdepth 2 \( -name 'upload-keystore.jks' -o -name '*upload*.jks' \) -type f 2>/dev/null | sort -u)
+    fi
+
+    local code_root
+    for code_root in \
+        "${HOME}/Desktop/code" \
+        "/Users/dan/Desktop/code" \
+        "$(dirname "$PROJECT_ROOT")"; do
+        if [ -d "$code_root" ]; then
+            while IFS= read -r candidate; do
+                ANDROID_KEYSTORE_CANDIDATES+=("$candidate")
+            done < <(find "$code_root" -maxdepth 6 -path '*/android/app/upload-keystore.jks' -type f 2>/dev/null | sort -u)
+        fi
+    done
+}
+
 prepare_android_signing() {
     log_info "准备 Android 签名..."
+    log_info "CERT_DIR=${CERT_DIR}"
+
+    materialize_keystore_from_env || true
 
     if [ ! -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
-        local keystore_candidates=(
-            "${ANDROID_UPLOAD_KEYSTORE:-}"
-            "${CERT_DIR}/upload-keystore.jks"
-            "${CERT_DIR}/scoreboard-upload-keystore.jks"
-            "/Users/dan/Desktop/code/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
-            "${HOME}/Desktop/code/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
-            "/Users/dan/Desktop/texas-rate/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
-            "${PROJECT_ROOT}/certs/upload-keystore.jks"
-        )
-        for candidate in "${keystore_candidates[@]}"; do
-            if [ -n "$candidate" ] && [ -f "$candidate" ]; then
+        collect_keystore_candidates
+        local candidate seen=""
+        for candidate in "${ANDROID_KEYSTORE_CANDIDATES[@]}"; do
+            if [[ " $seen " == *" $candidate "* ]]; then
+                continue
+            fi
+            seen="$seen $candidate"
+            if [ -f "$candidate" ]; then
+                mkdir -p "$PROJECT_ROOT/android/app"
                 cp "$candidate" "$PROJECT_ROOT/android/app/upload-keystore.jks"
                 log_info "已从 ${candidate} 复制 upload-keystore.jks"
                 break
@@ -441,6 +508,14 @@ prepare_android_signing() {
         elif [ -f "${CERT_DIR}/key.properties" ]; then
             cp "${CERT_DIR}/key.properties" "$PROJECT_ROOT/android/key.properties"
             log_info "已从证书目录复制 key.properties"
+        elif [ -n "${ANDROID_KEY_STORE_PASSWORD:-}" ] && [ -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
+            cat > "$PROJECT_ROOT/android/key.properties" << EOF
+storePassword=${ANDROID_KEY_STORE_PASSWORD}
+keyPassword=${ANDROID_KEY_PASSWORD:-${ANDROID_KEY_STORE_PASSWORD}}
+keyAlias=${ANDROID_KEY_ALIAS:-upload}
+storeFile=upload-keystore.jks
+EOF
+            log_info "已从环境变量生成 android/key.properties"
         elif [ -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
             cat > "$PROJECT_ROOT/android/key.properties" << 'EOF'
 storePassword=android
@@ -459,8 +534,29 @@ require_android_release_signing() {
         log_success "Android release 签名已就绪"
         return 0
     fi
+
     log_error "未找到 release keystore"
-    log_info "请把 upload-keystore.jks 放到 ${CERT_DIR}（与 texasWinRate 共用）"
+    collect_keystore_candidates
+    log_info "已搜索以下位置（均未找到可用 keystore）:"
+    local candidate seen=""
+    for candidate in "${ANDROID_KEYSTORE_CANDIDATES[@]}"; do
+        if [[ " $seen " == *" $candidate "* ]]; then
+            continue
+        fi
+        seen="$seen $candidate"
+        if [ -f "$candidate" ]; then
+            log_info "  [存在但未复制] $candidate"
+        else
+            log_info "  [不存在] $candidate"
+        fi
+    done
+    if [ -z "${ANDROID_UPLOAD_KEYSTORE_BASE64:-}${ANDROID_UPLOAD_KEYSTORE_DATA:-}" ]; then
+        log_info "  [未设置] ANDROID_UPLOAD_KEYSTORE_BASE64"
+    fi
+    log_info "任选其一即可:"
+    log_info "  1) 把 upload-keystore.jks 放到 ${CERT_DIR}（与 texasWinRate 共用）"
+    log_info "  2) 在 ${JENKINS_SECRETS_FILE} 设置 ANDROID_UPLOAD_KEYSTORE=/path/to/upload-keystore.jks"
+    log_info "  3) 在 Jenkins 凭据中设置 ANDROID_UPLOAD_KEYSTORE_BASE64（keystore 的 base64）"
     return 1
 }
 
@@ -1320,14 +1416,14 @@ main() {
     # 验证参数
     validate_params
 
+    # 签名/上传依赖节点密钥，必须在 --prepare-android-signing 之前加载
+    load_jenkins_secrets
+    resolve_ios_api_credentials
+
     if [ "$PREPARE_ANDROID_SIGNING_ONLY" = true ]; then
         require_android_release_signing
         exit $?
     fi
-
-    # 加载 Jenkins 节点上的密钥配置
-    load_jenkins_secrets
-    resolve_ios_api_credentials
 
     # 检查环境
     check_environment

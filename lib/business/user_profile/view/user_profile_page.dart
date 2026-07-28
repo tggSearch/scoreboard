@@ -273,13 +273,12 @@ class UserProfilePage extends BaseView<UserProfileController> {
   void _showPrivacyPolicy() {
     Get.dialog(
       AlertDialog(
+        scrollable: true,
         title: Text('privacy_policy_title'.tr),
-        content: SingleChildScrollView(
-          child: Text('privacy_policy_content'.tr),
-        ),
+        content: Text('privacy_policy_content'.tr),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('ok'.tr),
           ),
         ],
@@ -290,13 +289,12 @@ class UserProfilePage extends BaseView<UserProfileController> {
   void _showUserAgreement() {
     Get.dialog(
       AlertDialog(
+        scrollable: true,
         title: Text('user_agreement_title'.tr),
-        content: SingleChildScrollView(
-          child: Text('user_agreement_content'.tr),
-        ),
+        content: Text('user_agreement_content'.tr),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('ok'.tr),
           ),
         ],
@@ -307,18 +305,15 @@ class UserProfilePage extends BaseView<UserProfileController> {
   void _showFeedback() {
     Get.dialog(
       AlertDialog(
+        scrollable: true,
         title: Text('feedback_title'.tr),
-        content: SingleChildScrollView(
-          child: Text(
-            'feedback_content'.tr,
-            style: const TextStyle(fontSize: 14),
-            softWrap: true,
-            overflow: TextOverflow.visible,
-          ),
+        content: Text(
+          'feedback_content'.tr,
+          style: const TextStyle(fontSize: 14),
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('ok'.tr),
           ),
         ],
@@ -328,129 +323,164 @@ class UserProfilePage extends BaseView<UserProfileController> {
 
   void _showLanguageSettings() {
     final languageController = Get.find<LanguageController>();
-    
+    final maxHeight = MediaQuery.sizeOf(Get.context!).height * 0.65;
+
     Get.dialog(
-      AlertDialog(
-        title: Text('language'.tr),
-        content: SizedBox(
-          width: double.maxFinite,
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 360, maxHeight: maxHeight),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 当前语言显示
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 12, 8),
                 child: Row(
                   children: [
-                    Icon(Icons.language, color: Colors.blue.shade600, size: 20),
-                    const SizedBox(width: 8),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'language'.tr,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Obx(() {
-                            final currentCode = languageController.getCurrentLanguageCode();
-                            return Text(
-                              languageController.getCurrentLanguageName(),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
-                              ),
-                            );
-                          }),
-                        ],
+                      child: Text(
+                        'language'.tr,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => DialogNavigator.close(),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              
-              // 语言选项
-              ...languageController.getSupportedLanguages().map((language) {
-                final isSelected = language['code'] == languageController.getCurrentLanguageCode();
-                
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    leading: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Center(
-                        child: Text(
-                          language['code']!.substring(0, 2).toUpperCase(),
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey.shade600,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.language, color: Colors.blue.shade600, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'language'.tr,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Obx(() {
+                                    return Text(
+                                      languageController.getCurrentLanguageName(),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    title: Text(
-                      language['nativeName']!,
-                      style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                      ),
-                    ),
-                    subtitle: Text(
-                      _getLanguageDescription(language['code']!),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    trailing: isSelected
-                        ? const Icon(
-                            Icons.check_circle,
-                            color: AppColors.primary,
-                            size: 20,
-                          )
-                        : null,
-                    onTap: () async {
-                      if (!isSelected) {
-                        await languageController.changeLanguage(language['code']!);
-                        Get.back();
-                        Get.snackbar(
-                          'success'.tr,
-                          '${'language'.tr} ${'update'.tr} ${'success'.tr}',
-                          snackPosition: SnackPosition.TOP,
-                          backgroundColor: AppColors.primary,
-                          colorText: Colors.white,
-                          duration: const Duration(seconds: 2),
+                      const SizedBox(height: 16),
+                      ...languageController.getSupportedLanguages().map((language) {
+                        final isSelected =
+                            language['code'] == languageController.getCurrentLanguageCode();
+
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            leading: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: isSelected ? AppColors.primary : Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  language['code']!.substring(0, 2).toUpperCase(),
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.white : Colors.grey.shade600,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              language['nativeName']!,
+                              style: TextStyle(
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                              ),
+                            ),
+                            subtitle: Text(
+                              _getLanguageDescription(language['code']!),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            trailing: isSelected
+                                ? const Icon(
+                                    Icons.check_circle,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  )
+                                : null,
+                            onTap: () async {
+                              if (!isSelected) {
+                                await languageController.changeLanguage(language['code']!);
+                                DialogNavigator.closeThen(() {
+                                  Get.snackbar(
+                                    'success'.tr,
+                                    '${'language'.tr} ${'update'.tr} ${'success'.tr}',
+                                    snackPosition: SnackPosition.TOP,
+                                    backgroundColor: AppColors.primary,
+                                    colorText: Colors.white,
+                                    duration: const Duration(seconds: 2),
+                                  );
+                                });
+                              }
+                            },
+                          ),
                         );
-                      }
-                    },
+                      }),
+                    ],
                   ),
-                );
-              }).toList(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => DialogNavigator.close(),
+                    child: Text('close'.tr),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('close'.tr),
-          ),
-        ],
       ),
     );
   }
@@ -473,19 +503,19 @@ class UserProfilePage extends BaseView<UserProfileController> {
         content: Text('rate_app_content'.tr),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => DialogNavigator.close(),
             child: Text('rate_later'.tr),
           ),
           TextButton(
             onPressed: () {
-              Get.back();
-              // 这里可以添加跳转到应用商店的逻辑
-              Get.snackbar(
-                'tip'.tr,
-                '请前往应用商店为应用评分',
-                backgroundColor: AppColors.primary,
-                colorText: Colors.white,
-              );
+              DialogNavigator.closeThen(() {
+                Get.snackbar(
+                  'tip'.tr,
+                  '请前往应用商店为应用评分',
+                  backgroundColor: AppColors.primary,
+                  colorText: Colors.white,
+                );
+              });
             },
             child: Text('rate_now'.tr),
           ),

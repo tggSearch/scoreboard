@@ -153,15 +153,23 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
           const SizedBox(height: 4),
           Row(
             children: [
-              Obx(() => Text(
-                '${'times'.tr}: ${controller.playerScores[player] ?? 1}',
-                style: const TextStyle(fontSize: 12, color: UiColors.textSecondary),
-              )),
+              Flexible(
+                child: Obx(() => Text(
+                  '${'times'.tr}: ${controller.playerScores[player] ?? 1}',
+                  style: const TextStyle(fontSize: 12, color: UiColors.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )),
+              ),
               const SizedBox(width: 8),
-              Obx(() => Text(
-                '${'initial_chips'.tr}: ${(controller.playerScores[player] ?? 1) * controller.initialChips.value}${'points'.tr}',
-                style: const TextStyle(fontSize: 12, color: UiColors.textMuted),
-              )),
+              Flexible(
+                child: Obx(() => Text(
+                  '${'initial_chips'.tr}: ${(controller.playerScores[player] ?? 1) * controller.initialChips.value}${'points'.tr}',
+                  style: const TextStyle(fontSize: 12, color: UiColors.textMuted),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )),
+              ),
             ],
           ),
           const SizedBox(height: 2),
@@ -1286,6 +1294,9 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
               fontSize: 10,
               color: Colors.grey[600],
             ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(
@@ -1295,6 +1306,9 @@ class TexasHoldemPage extends BaseView<TexasHoldemController> {
               fontWeight: FontWeight.bold,
               color: color ?? Colors.black87,
             ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
