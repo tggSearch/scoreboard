@@ -35,7 +35,7 @@ load_jenkins_secrets() {
 # iOS App Store Connect API 配置
 IOS_API_KEY_ID="${IOS_API_KEY_ID:-}"
 IOS_API_ISSUER_ID="${IOS_API_ISSUER_ID:-}"
-IOS_API_KEY_PATH="${IOS_API_KEY_PATH:-${CERT_DIR}/AuthKey.p8}"
+IOS_API_KEY_PATH="${IOS_API_KEY_PATH:-${CERT_DIR}/4GN8P39YH9.p8}"
 
 # Android Google Play API 配置
 ANDROID_SERVICE_ACCOUNT_JSON="${ANDROID_SERVICE_ACCOUNT_JSON:-${CERT_DIR}/google-play-service-account.json}"

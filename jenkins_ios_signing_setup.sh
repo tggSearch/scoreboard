@@ -6,7 +6,7 @@ set -euo pipefail
 CERT_DIR="${CERT_DIR:-/Users/dan/Documents/cert}"
 BUNDLE_ID="${BUNDLE_ID:-com.qualrb.scoreBoardPro}"
 IOS_PROVISIONING_PROFILE="${IOS_PROVISIONING_PROFILE:-scoreboard}"
-IOS_PROVISIONING_PROFILE_PATH="${IOS_PROVISIONING_PROFILE_PATH:-$HOME/Downloads/scoreboard.mobileprovision}"
+IOS_PROVISIONING_PROFILE_PATH="${IOS_PROVISIONING_PROFILE_PATH:-${CERT_DIR}/scoreboard.mobileprovision}"
 PROVISION_DIR="${HOME}/Library/MobileDevice/Provisioning Profiles"
 MOBILE_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -98,9 +98,9 @@ security find-identity -v -p codesigning || true
 
 RESOLVED_PROFILE=""
 if command -v python3 >/dev/null 2>&1; then
-    RESOLVED_PROFILE=$(python3 - <<'PY' "$PROVISION_DIR" "$BUNDLE_ID" "$IOS_PROVISIONING_PROFILE"
+    RESOLVED_PROFILE=$(python3 - <<'PY' "$PROVISION_DIR" "$BUNDLE_ID" "$IOS_PROVISIONING_PROFILE" "$CERT_DIR"
 import glob, os, plistlib, re, subprocess, sys, tempfile
-provision_dir, bundle_id, preferred_name = sys.argv[1:4]
+provision_dir, bundle_id, preferred_name, cert_dir = sys.argv[1:5]
 
 def profile_cert_fingerprints(path):
     raw = subprocess.check_output(["security", "cms", "-D", "-i", path])
@@ -174,19 +174,18 @@ name_any = [c for c, _ in candidates if c["name"] == preferred_name]
 chosen = None
 if name_ok:
     chosen = name_ok[0]
-elif store_ok:
-    chosen = store_ok[0]
 elif name_any:
     chosen = name_any[0]
     print(f"[ios-signing] ⚠ Profile {preferred_name} 证书不匹配，仍尝试使用", file=sys.stderr)
-elif store_any:
-    chosen = store_any[0]
 else:
-    dev = [c for c, _ in candidates if c["type"] == "Development"]
-    if dev:
-        print("[ios-signing] ✗ 只有 Development 描述文件，Jenkins 打 IPA 不能用", file=sys.stderr)
-    else:
-        print("[ios-signing] ✗ 没有可用的 App Store + Distribution 描述文件", file=sys.stderr)
+    print(f"[ios-signing] ✗ 未找到名为 {preferred_name} 的描述文件", file=sys.stderr)
+    print("[ios-signing] 请将 scoreboard.mobileprovision 放到:", file=sys.stderr)
+    print(f"[ios-signing]   {cert_dir}/scoreboard.mobileprovision", file=sys.stderr)
+    print("[ios-signing]   或设置 IOS_PROVISIONING_PROFILE_PATH 环境变量", file=sys.stderr)
+    if candidates:
+        print("[ios-signing] 当前 bundle 匹配的其他 profile:", file=sys.stderr)
+        for c, _ in candidates:
+            print(f"[ios-signing]   - {c['name']} ({c['type']})", file=sys.stderr)
     sys.exit(1)
 
 if chosen["type"] == "Development":

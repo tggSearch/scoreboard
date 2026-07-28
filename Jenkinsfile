@@ -64,16 +64,16 @@ pipeline {
         BUNDLE_ID = 'com.qualrb.scoreBoardPro'
         TEAM_ID = '483V3ZF35S'
         IOS_PROVISIONING_PROFILE = 'scoreboard'
-        IOS_PROVISIONING_PROFILE_PATH = "${env.IOS_PROVISIONING_PROFILE_PATH ?: "${env.HOME}/Downloads/scoreboard.mobileprovision"}"
         
         // 证书目录（敏感密钥放在节点 ${CERT_DIR}/jenkins_secrets.env）
         CERT_DIR = "${env.CERT_DIR ?: '/Users/dan/Documents/cert'}"
+        IOS_PROVISIONING_PROFILE_PATH = "${env.IOS_PROVISIONING_PROFILE_PATH ?: "${CERT_DIR}/scoreboard.mobileprovision"}"
         JENKINS_SECRETS_FILE = "${env.JENKINS_SECRETS_FILE ?: "${CERT_DIR}/jenkins_secrets.env"}"
         
         // iOS App Store Connect API 配置（从 Jenkins 环境变量或 secrets 文件读取）
         IOS_API_KEY_ID = "${env.IOS_API_KEY_ID ?: ''}"
         IOS_API_ISSUER_ID = "${env.IOS_API_ISSUER_ID ?: ''}"
-        IOS_API_KEY_PATH = "${env.IOS_API_KEY_PATH ?: "${CERT_DIR}/AuthKey.p8"}"
+        IOS_API_KEY_PATH = "${env.IOS_API_KEY_PATH ?: "${CERT_DIR}/4GN8P39YH9.p8"}"
         
         // Android Google Play API 配置
         ANDROID_SERVICE_ACCOUNT_JSON = "${env.ANDROID_SERVICE_ACCOUNT_JSON ?: "${CERT_DIR}/google-play-service-account.json"}"
@@ -371,7 +371,7 @@ pipeline {
                             export PATH="/opt/homebrew/bin:/usr/local/bin:$FLUTTER_HOME/bin:$HOME/.rbenv/shims:$HOME/.rvm/bin:$PATH"
                             export BUNDLE_ID=com.qualrb.scoreBoardPro
                             export IOS_PROVISIONING_PROFILE=scoreboard
-                            export IOS_PROVISIONING_PROFILE_PATH="${IOS_PROVISIONING_PROFILE_PATH:-$HOME/Downloads/scoreboard.mobileprovision}"
+                            export IOS_PROVISIONING_PROFILE_PATH="${IOS_PROVISIONING_PROFILE_PATH:-${CERT_DIR}/scoreboard.mobileprovision}"
                             ./jenkins_ios_signing_setup.sh
                         '''
                     }
@@ -414,13 +414,11 @@ pipeline {
                 stage('Build IPA') {
                     steps {
                         script {
-                            def buildArgs = "--${params.BUILD_MODE}"
-                            if (params.VERSION_OVERRIDE?.trim()) {
-                                def versionParts = params.VERSION_OVERRIDE.split('\\+')
-                                def versionName = versionParts[0]
-                                def versionCode = versionParts.size() > 1 ? versionParts[1] : BUILD_NUMBER
-                                buildArgs += " --build-name=${versionName} --build-number=${versionCode}"
-                            }
+                            def versionSource = params.VERSION_OVERRIDE?.trim() ?: env.APP_VERSION
+                            def versionParts = versionSource.split('\\+')
+                            def versionName = versionParts[0]
+                            def versionCode = versionParts.size() > 1 ? versionParts[1] : BUILD_NUMBER
+                            def buildArgs = "--${params.BUILD_MODE} --build-name=${versionName} --build-number=${versionCode}"
                             
                             sh """
                                 export PATH="/opt/homebrew/bin:/usr/local/bin:\$FLUTTER_HOME/bin:\$HOME/.rbenv/shims:\$HOME/.rvm/bin:\$PATH"
@@ -481,32 +479,10 @@ Score Board - 构建报告
                 }
             }
             steps {
-                script {
-                    echo "上传 IPA 到 App Store Connect..."
-                    
-                    // 设置 API Key 目录
-                    sh """
-                        mkdir -p ~/.appstoreconnect/private_keys
-                        cp ${IOS_API_KEY_PATH} ~/.appstoreconnect/private_keys/AuthKey_${IOS_API_KEY_ID}.p8
-                    """
-                    
-                    // 查找 IPA 文件并上传
-                    sh """
-                        IPA_FILE=\$(find output -name "*.ipa" -type f | head -1)
-                        if [ -n "\$IPA_FILE" ]; then
-                            echo "上传文件: \$IPA_FILE"
-                            xcrun altool --upload-app \\
-                                --type ios \\
-                                --file "\$IPA_FILE" \\
-                                --apiKey ${IOS_API_KEY_ID} \\
-                                --apiIssuer ${IOS_API_ISSUER_ID} \\
-                                --verbose
-                        else
-                            echo "未找到 IPA 文件"
-                            exit 1
-                        fi
-                    """
-                }
+                sh """
+                    export PATH="/opt/homebrew/bin:/usr/local/bin:\$FLUTTER_HOME/bin:\$HOME/.rbenv/shims:\$HOME/.rvm/bin:\$PATH"
+                    ./jenkins_build.sh -t ios --upload-only
+                """
             }
         }
 
