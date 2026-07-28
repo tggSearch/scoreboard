@@ -2,17 +2,18 @@
 
 ## 证书文件位置
 
-- Keystore 文件: `certs/upload-keystore.jks`（Jenkins 构建时复制到 `android/app/`）
-- 配置文件: `android/key.properties`（Jenkins 自动生成）
-- 专用 Keystore（可选）: `${CERT_DIR}/scoreboard-upload-keystore.jks`
+- **专用 Keystore（必需）**: `${CERT_DIR}/scoreboard-upload-keystore.jks`
+- **可选配置**: `${CERT_DIR}/scoreboard-key.properties`
+- **Jenkins 构建时**: 复制到 `android/app/upload-keystore.jks`，并生成 `android/key.properties`
 
 ## 证书信息
 
 - **包名**: `com.qualrb.scoreboard`
 - **证书别名**: `upload`
-- **默认证书密码**: `android`（与 texasWinRate 等项目共用 upload-keystore.jks）
-- **专用密码**: `scoreboard123`（仅在使用 scoreboard-upload-keystore.jks 时）
-- **有效期**: 10,000 天
+- **默认证书密码**: `scoreboard123`
+- **Google Play upload key SHA1**: `3B:CA:B7:74:01:9E:5F:E8:51:7E:DE:0C:7E:46:08:C1:02:98:33:97`
+
+> **重要**: ScoreBoard 与 texasWinRate 使用不同的 Google Play upload key，**不可**共用 `upload/android` keystore。
 
 ## 构建文件
 
@@ -41,6 +42,9 @@
 ## 构建命令
 
 ```bash
+# 准备 Android 签名
+./jenkins_build.sh --prepare-android-signing
+
 # 构建APK
 flutter build apk --release
 
@@ -50,7 +54,7 @@ flutter build appbundle --release
 
 ## 重要提醒
 
-1. 请妥善保管 keystore 文件和密码，这是上传到 Google Play 的唯一凭证
+1. 请妥善保管 `scoreboard-upload-keystore.jks` 和密码，这是上传到 Google Play 的唯一凭证
 2. 如果丢失 keystore 文件，将无法更新应用
 3. 建议将 keystore 文件备份到安全位置
 
