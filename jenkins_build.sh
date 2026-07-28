@@ -438,30 +438,22 @@ prepare_android_signing() {
         keystore_source="project"
     fi
 
-    if [ ! -f "$PROJECT_ROOT/android/key.properties" ]; then
+    if [ -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
         if [ -f "${CERT_DIR}/scoreboard-key.properties" ]; then
             cp "${CERT_DIR}/scoreboard-key.properties" "$PROJECT_ROOT/android/key.properties"
-            log_info "已从证书目录复制 scoreboard-key.properties"
-        elif [ -f "${CERT_DIR}/key.properties" ]; then
-            cp "${CERT_DIR}/key.properties" "$PROJECT_ROOT/android/key.properties"
-            log_info "已从证书目录复制 key.properties"
-        elif [ -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
-            if [[ "$keystore_source" == *scoreboard* ]]; then
-                cat > "$PROJECT_ROOT/android/key.properties" << 'EOF'
+            log_info "已从证书目录复制 scoreboard-key.properties（专用签名）"
+        elif [[ "$keystore_source" == *scoreboard* ]]; then
+            cat > "$PROJECT_ROOT/android/key.properties" << 'EOF'
 storePassword=scoreboard123
 keyPassword=scoreboard123
 keyAlias=upload
 storeFile=upload-keystore.jks
 EOF
-            else
-                cat > "$PROJECT_ROOT/android/key.properties" << 'EOF'
-storePassword=android
-keyPassword=android
-keyAlias=upload
-storeFile=upload-keystore.jks
-EOF
-            fi
-            log_info "已生成 android/key.properties"
+            log_info "已生成 scoreboard 专用 key.properties"
+        else
+            # 共用 keystore 与 texasWinRate 一致，Gradle 直接使用 upload/android，无需 key.properties
+            rm -f "$PROJECT_ROOT/android/key.properties"
+            log_info "使用共用 upload-keystore.jks（upload/android，与 texasWinRate 一致）"
         fi
     fi
 }

@@ -17,9 +17,6 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
-val uploadKeystoreFile = file("upload-keystore.jks")
-val hasReleaseKeystore = keystorePropertiesFile.exists() || uploadKeystoreFile.exists()
-
 android {
     namespace = "com.qualrb.scoreboard"
     compileSdk = flutter.compileSdkVersion
@@ -42,10 +39,10 @@ android {
                 storeFile = file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
             } else {
-                // 与 texasWinRate / instaplot 共用 upload-keystore.jks（alias/password: upload/android）
+                // 与 texasWinRate 一致：共用 upload-keystore.jks（upload/android）
                 keyAlias = "upload"
                 keyPassword = "android"
-                storeFile = uploadKeystoreFile
+                storeFile = file("upload-keystore.jks")
                 storePassword = "android"
             }
         }
@@ -61,11 +58,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (hasReleaseKeystore) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
