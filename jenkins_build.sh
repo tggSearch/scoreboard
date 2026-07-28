@@ -412,6 +412,13 @@ parse_version() {
 
 # ==================== Android 签名准备 ====================
 
+is_scoreboard_dedicated_keystore() {
+    local src="$1"
+    local base
+    base=$(basename "$src")
+    [[ "$base" == "scoreboard-upload-keystore.jks" ]]
+}
+
 prepare_android_signing() {
     log_info "准备 Android 签名..."
     local keystore_source=""
@@ -442,7 +449,7 @@ prepare_android_signing() {
         if [ -f "${CERT_DIR}/scoreboard-key.properties" ]; then
             cp "${CERT_DIR}/scoreboard-key.properties" "$PROJECT_ROOT/android/key.properties"
             log_info "已从证书目录复制 scoreboard-key.properties（专用签名）"
-        elif [[ "$keystore_source" == *scoreboard* ]]; then
+        elif is_scoreboard_dedicated_keystore "$keystore_source"; then
             cat > "$PROJECT_ROOT/android/key.properties" << 'EOF'
 storePassword=scoreboard123
 keyPassword=scoreboard123
@@ -979,6 +986,7 @@ import time
 try:
     from google.oauth2 import service_account
     from googleapiclient.discovery import build
+    from googleapiclient.errors import HttpError
     from googleapiclient.http import MediaFileUpload
     from google.auth.transport.requests import AuthorizedSession
     import requests
@@ -1055,6 +1063,24 @@ def test_api_connectivity(session):
             time.sleep(wait)
 
 
+def execute_with_retry(request, description, max_retries=5):
+    """Google Play API 偶发 502/503，上传 AAB 时自动重试"""
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            return request.execute()
+        except HttpError as e:
+            last_error = e
+            status = getattr(e.resp, 'status', None)
+            if status in (429, 500, 502, 503, 504) and attempt + 1 < max_retries:
+                wait = min(60, 5 * (2 ** attempt))
+                print(f"{description} 失败 HTTP {status} ({attempt + 1}/{max_retries})，{wait}s 后重试...")
+                time.sleep(wait)
+                continue
+            raise
+    raise last_error
+
+
 def upload_aab(service_account_file, package_name, aab_file, track):
     print("正在认证服务账号...")
 
@@ -1076,50 +1102,74 @@ def upload_aab(service_account_file, package_name, aab_file, track):
     http = RequestsHttp(session, timeout=600)
     service = build('androidpublisher', 'v3', http=http)
 
-    print("创建编辑会话...")
-    edit_response = service.edits().insert(body={}, packageName=package_name).execute()
-    edit_id = edit_response['id']
+    max_upload_attempts = 3
+    for upload_attempt in range(max_upload_attempts):
+        try:
+            print("创建编辑会话...")
+            edit_response = execute_with_retry(
+                service.edits().insert(body={}, packageName=package_name),
+                "创建编辑会话",
+            )
+            edit_id = edit_response['id']
 
-    print(f"编辑会话 ID: {edit_id}")
-    print(f"上传 AAB 文件: {aab_file}")
+            print(f"编辑会话 ID: {edit_id}")
+            print(f"上传 AAB 文件: {aab_file}")
 
-    # resumable=False：单次上传，避免代理下分块 resumable 导致 SSL RECORD_LAYER_FAILURE
-    media = MediaFileUpload(aab_file, mimetype='application/octet-stream', resumable=False)
+            media = MediaFileUpload(aab_file, mimetype='application/octet-stream', resumable=False)
+            bundle_response = execute_with_retry(
+                service.edits().bundles().upload(
+                    packageName=package_name,
+                    editId=edit_id,
+                    media_body=media
+                ),
+                "上传 AAB",
+                max_retries=5,
+            )
 
-    bundle_response = service.edits().bundles().upload(
-        packageName=package_name,
-        editId=edit_id,
-        media_body=media
-    ).execute()
+            version_code = bundle_response['versionCode']
+            print(f"上传成功! Version Code: {version_code}")
 
-    version_code = bundle_response['versionCode']
-    print(f"上传成功! Version Code: {version_code}")
+            print(f"设置发布轨道: {track}")
+            track_response = execute_with_retry(
+                service.edits().tracks().update(
+                    packageName=package_name,
+                    editId=edit_id,
+                    track=track,
+                    body={
+                        'track': track,
+                        'releases': [{
+                            'versionCodes': [version_code],
+                            'status': 'completed' if track == 'production' else 'draft'
+                        }]
+                    }
+                ),
+                "设置发布轨道",
+            )
 
-    print(f"设置发布轨道: {track}")
-    track_response = service.edits().tracks().update(
-        packageName=package_name,
-        editId=edit_id,
-        track=track,
-        body={
-            'track': track,
-            'releases': [{
-                'versionCodes': [version_code],
-                'status': 'completed' if track == 'production' else 'draft'
-            }]
-        }
-    ).execute()
+            print(f"轨道设置成功: {track_response['track']}")
+            print("提交更改...")
 
-    print(f"轨道设置成功: {track_response['track']}")
-    print("提交更改...")
+            commit_response = execute_with_retry(
+                service.edits().commit(
+                    packageName=package_name,
+                    editId=edit_id
+                ),
+                "提交编辑会话",
+            )
 
-    commit_response = service.edits().commit(
-        packageName=package_name,
-        editId=edit_id
-    ).execute()
+            print(f"提交成功! Edit ID: {commit_response['id']}")
+            print("AAB 已成功上传到 Google Play!")
+            return True
+        except HttpError as e:
+            status = getattr(e.resp, 'status', None)
+            if status in (429, 500, 502, 503, 504) and upload_attempt + 1 < max_upload_attempts:
+                wait = min(90, 10 * (2 ** upload_attempt))
+                print(f"上传流程失败 HTTP {status} ({upload_attempt + 1}/{max_upload_attempts})，{wait}s 后重新开始...")
+                time.sleep(wait)
+                continue
+            raise
 
-    print(f"提交成功! Edit ID: {commit_response['id']}")
-    print("AAB 已成功上传到 Google Play!")
-    return True
+    return False
 
 
 def main():
