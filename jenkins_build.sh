@@ -652,6 +652,13 @@ check_upload_requirements() {
     
     # 检查 iOS 上传配置
     if [[ "$BUILD_TARGET" =~ ^(all|ios)$ ]]; then
+        if [ -z "$IOS_API_KEY_ID" ] || [ -z "$IOS_API_ISSUER_ID" ]; then
+            log_error "iOS API Key 未设置"
+            log_info "请在 Jenkins 环境变量或 ${JENKINS_SECRETS_FILE} 中配置 IOS_API_KEY_ID / IOS_API_ISSUER_ID"
+            has_error=true
+        else
+            log_success "iOS API Key 已配置: ${IOS_API_KEY_ID}"
+        fi
         if [ ! -f "$IOS_API_KEY_PATH" ]; then
             log_error "iOS API Key 文件不存在: $IOS_API_KEY_PATH"
             has_error=true
