@@ -67,7 +67,7 @@ pipeline {
         
         // 证书目录（敏感密钥放在节点 ${CERT_DIR}/jenkins_secrets.env）
         CERT_DIR = "${env.CERT_DIR ?: '/Users/dan/Documents/cert'}"
-        IOS_PROVISIONING_PROFILE_PATH = "${env.IOS_PROVISIONING_PROFILE_PATH ?: "${CERT_DIR}/scoreboard.mobileprovision"}"
+        IOS_PROVISIONING_PROFILE_PATH = "${env.IOS_PROVISIONING_PROFILE_PATH ?: "${WORKSPACE}/certs/scoreboard.mobileprovision"}"
         JENKINS_SECRETS_FILE = "${env.JENKINS_SECRETS_FILE ?: "${CERT_DIR}/jenkins_secrets.env"}"
         
         // iOS App Store Connect API 配置（从 Jenkins 环境变量或 secrets 文件读取）
@@ -371,7 +371,6 @@ pipeline {
                             export PATH="/opt/homebrew/bin:/usr/local/bin:$FLUTTER_HOME/bin:$HOME/.rbenv/shims:$HOME/.rvm/bin:$PATH"
                             export BUNDLE_ID=com.qualrb.scoreBoardPro
                             export IOS_PROVISIONING_PROFILE=scoreboard
-                            export IOS_PROVISIONING_PROFILE_PATH="${IOS_PROVISIONING_PROFILE_PATH:-${CERT_DIR}/scoreboard.mobileprovision}"
                             ./jenkins_ios_signing_setup.sh
                         '''
                     }

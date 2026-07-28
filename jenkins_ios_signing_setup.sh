@@ -6,9 +6,9 @@ set -euo pipefail
 CERT_DIR="${CERT_DIR:-/Users/dan/Documents/cert}"
 BUNDLE_ID="${BUNDLE_ID:-com.qualrb.scoreBoardPro}"
 IOS_PROVISIONING_PROFILE="${IOS_PROVISIONING_PROFILE:-scoreboard}"
-IOS_PROVISIONING_PROFILE_PATH="${IOS_PROVISIONING_PROFILE_PATH:-${CERT_DIR}/scoreboard.mobileprovision}"
-PROVISION_DIR="${HOME}/Library/MobileDevice/Provisioning Profiles"
 MOBILE_DIR="$(cd "$(dirname "$0")" && pwd)"
+IOS_PROVISIONING_PROFILE_PATH="${IOS_PROVISIONING_PROFILE_PATH:-${MOBILE_DIR}/certs/scoreboard.mobileprovision}"
+PROVISION_DIR="${HOME}/Library/MobileDevice/Provisioning Profiles"
 
 log() { echo "[ios-signing] $*"; }
 
@@ -77,6 +77,7 @@ mkdir -p "$PROVISION_DIR"
 installed=false
 for candidate in \
     "$IOS_PROVISIONING_PROFILE_PATH" \
+    "${MOBILE_DIR}/certs/scoreboard.mobileprovision" \
     "${CERT_DIR}/scoreboard.mobileprovision" \
     "${CERT_DIR}/scoreBoardPro.mobileprovision" \
     "${CERT_DIR}/com.qualrb.scoreBoardPro.mobileprovision" \
@@ -89,8 +90,8 @@ for candidate in \
 done
 
 if [ "$installed" = false ]; then
-    log "未在常见路径找到 scoreboard 描述文件，使用系统已安装 profile"
-    log "可放到: ${CERT_DIR}/scoreboard.mobileprovision 或 ${HOME}/Downloads/scoreboard.mobileprovision"
+    log "未找到 scoreboard 描述文件"
+    log "请将 scoreboard.mobileprovision 放到: ${MOBILE_DIR}/certs/scoreboard.mobileprovision"
 fi
 
 log "可用签名证书:"
