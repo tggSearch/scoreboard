@@ -76,7 +76,7 @@ pipeline {
         IOS_API_KEY_PATH = "${env.IOS_API_KEY_PATH ?: "${CERT_DIR}/4GN8P39YH9.p8"}"
         
         // Android Google Play API 配置
-        ANDROID_SERVICE_ACCOUNT_JSON = "${env.ANDROID_SERVICE_ACCOUNT_JSON ?: "${CERT_DIR}/google-play-service-account.json"}"
+        ANDROID_SERVICE_ACCOUNT_JSON = "${env.ANDROID_SERVICE_ACCOUNT_JSON ?: "${CERT_DIR}/tudan.json"}"
         
         // 腾讯云 COS 配置 (APK 上传)
         TENCENT_SECRET_ID = "${env.TENCENT_SECRET_ID ?: ''}"

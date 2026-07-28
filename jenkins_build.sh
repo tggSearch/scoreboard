@@ -29,6 +29,36 @@ load_jenkins_secrets() {
         # shellcheck source=/dev/null
         source "$JENKINS_SECRETS_FILE"
         set +a
+        log_info "已加载密钥配置: $JENKINS_SECRETS_FILE"
+    fi
+}
+
+resolve_ios_api_credentials() {
+    if [ ! -f "$IOS_API_KEY_PATH" ]; then
+        local candidate
+        for candidate in \
+            "${CERT_DIR}/4GN8P39YH9.p8" \
+            "${CERT_DIR}"/AuthKey_*.p8 \
+            "${CERT_DIR}"/*.p8; do
+            if [ -f "$candidate" ]; then
+                IOS_API_KEY_PATH="$candidate"
+                log_info "自动发现 iOS API Key 文件: $IOS_API_KEY_PATH"
+                break
+            fi
+        done
+    fi
+
+    if [ -z "$IOS_API_KEY_ID" ] && [ -f "$IOS_API_KEY_PATH" ]; then
+        local key_base
+        key_base=$(basename "$IOS_API_KEY_PATH" .p8)
+        IOS_API_KEY_ID="${key_base#AuthKey_}"
+        log_info "从 p8 文件名解析 IOS_API_KEY_ID: $IOS_API_KEY_ID"
+    fi
+
+    if [ -z "$IOS_API_ISSUER_ID" ]; then
+        # Qualrb 团队 App Store Connect Issuer ID（与 Texas Win Rate 等项目相同）
+        IOS_API_ISSUER_ID="aabd36b8-9b8f-44ed-a8db-5afff7624ad6"
+        log_info "使用 Qualrb 团队默认 IOS_API_ISSUER_ID"
     fi
 }
 
@@ -38,7 +68,7 @@ IOS_API_ISSUER_ID="${IOS_API_ISSUER_ID:-}"
 IOS_API_KEY_PATH="${IOS_API_KEY_PATH:-${CERT_DIR}/4GN8P39YH9.p8}"
 
 # Android Google Play API 配置
-ANDROID_SERVICE_ACCOUNT_JSON="${ANDROID_SERVICE_ACCOUNT_JSON:-${CERT_DIR}/google-play-service-account.json}"
+ANDROID_SERVICE_ACCOUNT_JSON="${ANDROID_SERVICE_ACCOUNT_JSON:-${CERT_DIR}/tudan.json}"
 ANDROID_PACKAGE_NAME="com.qualrb.scoreboard"
 
 # 腾讯云 COS 配置 (APK 上传)
@@ -1213,6 +1243,7 @@ main() {
 
     # 加载 Jenkins 节点上的密钥配置
     load_jenkins_secrets
+    resolve_ios_api_credentials
 
     # 检查环境
     check_environment
