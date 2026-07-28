@@ -2,14 +2,16 @@
 
 ## 证书文件位置
 
-- Keystore 文件: `android/app/upload-keystore.jks`
-- 配置文件: `android/key.properties`
+- Keystore 文件: `certs/upload-keystore.jks`（Jenkins 构建时复制到 `android/app/`）
+- 配置文件: `android/key.properties`（Jenkins 自动生成）
+- 专用 Keystore（可选）: `${CERT_DIR}/scoreboard-upload-keystore.jks`
 
 ## 证书信息
 
 - **包名**: `com.qualrb.scoreboard`
 - **证书别名**: `upload`
-- **证书密码**: `scoreboard123`
+- **默认证书密码**: `android`（与 texasWinRate 等项目共用 upload-keystore.jks）
+- **专用密码**: `scoreboard123`（仅在使用 scoreboard-upload-keystore.jks 时）
 - **有效期**: 10,000 天
 
 ## 构建文件

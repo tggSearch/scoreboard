@@ -258,30 +258,10 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    echo "准备 Android 签名密钥..."
-                    
-                    // 检查密钥文件（优先使用项目中的，其次从证书目录复制）
-                    sh """
-                        if [ -f android/app/upload-keystore.jks ]; then
-                            echo "✓ Android 密钥文件已存在于项目中"
-                        elif [ -f ${CERT_DIR}/upload-keystore.jks ]; then
-                            cp ${CERT_DIR}/upload-keystore.jks android/app/upload-keystore.jks
-                            echo "✓ Android 密钥文件已从证书目录复制"
-                        else
-                            echo "✗ 警告: 未找到 Android 密钥文件"
-                            echo "请确保 android/app/upload-keystore.jks 或 ${CERT_DIR}/upload-keystore.jks 存在"
-                        fi
-
-                        if [ ! -f android/key.properties ] && [ -f ${CERT_DIR}/scoreboard-key.properties ]; then
-                            cp ${CERT_DIR}/scoreboard-key.properties android/key.properties
-                            echo "✓ 已从证书目录复制 key.properties"
-                        elif [ ! -f android/key.properties ] && [ -f ${CERT_DIR}/key.properties ]; then
-                            cp ${CERT_DIR}/key.properties android/key.properties
-                            echo "✓ 已从证书目录复制 key.properties"
-                        fi
-                    """
-                }
+                sh '''
+                    export PATH="/opt/homebrew/bin:/usr/local/bin:$FLUTTER_HOME/bin:$HOME/.rbenv/shims:$HOME/.rvm/bin:$PATH"
+                    ./jenkins_build.sh --prepare-android-signing
+                '''
             }
         }
 
@@ -320,18 +300,14 @@ pipeline {
             }
             steps {
                 script {
-                    def buildArgs = "--${params.BUILD_MODE}"
+                    def versionArg = ''
                     if (params.VERSION_OVERRIDE?.trim()) {
-                        def versionParts = params.VERSION_OVERRIDE.split('\\+')
-                        def versionName = versionParts[0]
-                        def versionCode = versionParts.size() > 1 ? versionParts[1] : BUILD_NUMBER
-                        buildArgs += " --build-name=${versionName} --build-number=${versionCode}"
+                        versionArg = "-v ${params.VERSION_OVERRIDE.trim()}"
                     }
-                    
+                    def cleanArg = params.CLEAN_BUILD ? '-c' : ''
                     sh """
                         export PATH="/opt/homebrew/bin:/usr/local/bin:\$FLUTTER_HOME/bin:\$HOME/.rbenv/shims:\$HOME/.rvm/bin:\$PATH"
-                        flutter build appbundle ${buildArgs} --target-platform=android-arm,android-arm64
-                        cp build/app/outputs/bundle/${params.BUILD_MODE}/app-${params.BUILD_MODE}.aab output/${APP_NAME}-${env.APP_VERSION}.aab
+                        ./jenkins_build.sh -t aab -m ${params.BUILD_MODE} ${versionArg} ${cleanArg}
                     """
                 }
             }

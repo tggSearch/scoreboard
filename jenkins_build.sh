@@ -179,9 +179,14 @@ NO_CODESIGN=false
 UPLOAD_ENABLED=false
 UPLOAD_ONLY=false
 GOOGLE_PLAY_TRACK="internal"
+PREPARE_ANDROID_SIGNING_ONLY=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --prepare-android-signing)
+            PREPARE_ANDROID_SIGNING_ONLY=true
+            shift
+            ;;
         -t|--target)
             BUILD_TARGET="$2"
             shift 2
@@ -409,10 +414,28 @@ parse_version() {
 
 prepare_android_signing() {
     log_info "准备 Android 签名..."
+    local keystore_source=""
 
-    if [ ! -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ] && [ -f "${CERT_DIR}/upload-keystore.jks" ]; then
-        cp "${CERT_DIR}/upload-keystore.jks" "$PROJECT_ROOT/android/app/upload-keystore.jks"
-        log_info "已从证书目录复制 upload-keystore.jks"
+    if [ ! -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
+        local keystore_candidates=(
+            "${ANDROID_UPLOAD_KEYSTORE:-}"
+            "${PROJECT_ROOT}/certs/upload-keystore.jks"
+            "${CERT_DIR}/scoreboard-upload-keystore.jks"
+            "${CERT_DIR}/upload-keystore.jks"
+            "/Users/dan/Desktop/code/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
+            "${HOME}/Desktop/code/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
+            "/Users/dan/Desktop/texas-rate/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
+        )
+        for candidate in "${keystore_candidates[@]}"; do
+            if [ -n "$candidate" ] && [ -f "$candidate" ]; then
+                cp "$candidate" "$PROJECT_ROOT/android/app/upload-keystore.jks"
+                keystore_source="$candidate"
+                log_info "已从 ${candidate} 复制 upload-keystore.jks"
+                break
+            fi
+        done
+    else
+        keystore_source="project"
     fi
 
     if [ ! -f "$PROJECT_ROOT/android/key.properties" ]; then
@@ -422,10 +445,36 @@ prepare_android_signing() {
         elif [ -f "${CERT_DIR}/key.properties" ]; then
             cp "${CERT_DIR}/key.properties" "$PROJECT_ROOT/android/key.properties"
             log_info "已从证书目录复制 key.properties"
-        else
-            log_warning "未找到 android/key.properties，release 签名可能失败"
+        elif [ -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
+            if [[ "$keystore_source" == *scoreboard* ]]; then
+                cat > "$PROJECT_ROOT/android/key.properties" << 'EOF'
+storePassword=scoreboard123
+keyPassword=scoreboard123
+keyAlias=upload
+storeFile=upload-keystore.jks
+EOF
+            else
+                cat > "$PROJECT_ROOT/android/key.properties" << 'EOF'
+storePassword=android
+keyPassword=android
+keyAlias=upload
+storeFile=upload-keystore.jks
+EOF
+            fi
+            log_info "已生成 android/key.properties"
         fi
     fi
+}
+
+require_android_release_signing() {
+    prepare_android_signing
+    if [ -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
+        log_success "Android release 签名已就绪"
+        return 0
+    fi
+    log_error "未找到 release keystore"
+    log_info "请确保仓库内 certs/upload-keystore.jks 存在，或放到 ${CERT_DIR}/upload-keystore.jks"
+    return 1
 }
 
 # ==================== 构建准备 ====================
@@ -434,7 +483,7 @@ prepare_build() {
     log_step "准备构建"
 
     if [[ "$BUILD_TARGET" == "apk" || "$BUILD_TARGET" == "aab" || "$BUILD_TARGET" == "android" || "$BUILD_TARGET" == "all" ]]; then
-        prepare_android_signing
+        require_android_release_signing || exit 1
         if [[ -f "$PROJECT_ROOT/android/scripts/ensure_ndk_r28.sh" ]]; then
             log_info "确认 Android NDK r28（release native 16KB）..."
             bash "$PROJECT_ROOT/android/scripts/ensure_ndk_r28.sh" || true
@@ -1240,6 +1289,11 @@ main() {
 
     # 验证参数
     validate_params
+
+    if [ "$PREPARE_ANDROID_SIGNING_ONLY" = true ]; then
+        require_android_release_signing
+        exit $?
+    fi
 
     # 加载 Jenkins 节点上的密钥配置
     load_jenkins_secrets
