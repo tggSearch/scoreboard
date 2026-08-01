@@ -414,20 +414,23 @@ parse_version() {
 
 # ==================== Android 签名准备 ====================
 
+keytool_works() {
+    local bin="$1"
+    # macOS /usr/bin/keytool 是占位脚本，无 JRE 时会失败
+    [ -x "$bin" ] || return 1
+    "$bin" -help >/dev/null 2>&1
+}
+
 resolve_keytool() {
-    if [ -n "${JAVA_HOME:-}" ] && [ -x "${JAVA_HOME}/bin/keytool" ]; then
-        echo "${JAVA_HOME}/bin/keytool"
-        return 0
-    fi
-    if command -v keytool >/dev/null 2>&1; then
-        command -v keytool
-        return 0
-    fi
     local candidate
     for candidate in \
+        "${JAVA_HOME:+$JAVA_HOME/bin/keytool}" \
         "/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool" \
-        "/Applications/Android Studio 2.app/Contents/jbr/Contents/Home/bin/keytool"; do
-        if [ -x "$candidate" ]; then
+        "/Applications/Android Studio 2.app/Contents/jbr/Contents/Home/bin/keytool" \
+        "/opt/homebrew/opt/openjdk/bin/keytool" \
+        "/opt/homebrew/opt/openjdk@21/bin/keytool" \
+        "$(command -v keytool 2>/dev/null || true)"; do
+        if [ -n "$candidate" ] && keytool_works "$candidate"; then
             echo "$candidate"
             return 0
         fi
@@ -443,9 +446,24 @@ get_keystore_sha1() {
     local keystore="$1"
     local store_pass="$2"
     local keytool_bin
-    keytool_bin="$(resolve_keytool)" || return 1
-    "$keytool_bin" -list -v -keystore "$keystore" -storepass "$store_pass" 2>/dev/null \
-        | grep "SHA1:" | head -1 | sed 's/.*SHA1: //' | tr -d ' '
+    keytool_bin="$(resolve_keytool)" || {
+        log_error "未找到可用的 keytool（请安装 JDK 或设置 JAVA_HOME）"
+        return 1
+    }
+    # 用 openssl 从导出证书读指纹更稳；失败再回退 keytool 文本解析
+    local tmp_cert sha1
+    tmp_cert="$(mktemp)"
+    if "$keytool_bin" -exportcert -rfc -keystore "$keystore" -alias upload \
+        -storepass "$store_pass" -file "$tmp_cert" >/dev/null 2>&1; then
+        sha1=$(openssl x509 -in "$tmp_cert" -noout -fingerprint -sha1 2>/dev/null \
+            | sed 's/.*=//' | tr -d ' ')
+    fi
+    rm -f "$tmp_cert"
+    if [ -z "$sha1" ]; then
+        sha1=$("$keytool_bin" -list -v -keystore "$keystore" -storepass "$store_pass" 2>/dev/null \
+            | grep "SHA1:" | head -1 | sed 's/.*SHA1: //' | tr -d ' \t' || true)
+    fi
+    echo "$sha1"
 }
 
 materialize_keystore_from_env() {

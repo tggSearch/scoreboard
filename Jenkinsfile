@@ -42,7 +42,7 @@ pipeline {
         ANDROID_HOME = "${env.ANDROID_HOME ?: '/Users/dan/Library/Android/sdk'}"
         ANDROID_SDK_ROOT = "${ANDROID_HOME}"
         // Gradle / sdkmanager（Jenkins 守护进程默认不带 JAVA_HOME）
-        JAVA_HOME = "${env.JAVA_HOME ?: '/Applications/Android Studio 2.app/Contents/jbr/Contents/Home'}"
+        JAVA_HOME = "${env.JAVA_HOME ?: '/Applications/Android Studio.app/Contents/jbr/Contents/Home'}"
         
         // Ruby/Gem 环境（用于 CocoaPods）
         GEM_HOME = "${env.HOME}/.gem"
