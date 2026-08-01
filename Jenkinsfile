@@ -461,10 +461,13 @@ Score Board - 构建报告
                 }
             }
             steps {
-                sh """
-                    export PATH="/opt/homebrew/bin:/usr/local/bin:\$FLUTTER_HOME/bin:\$HOME/.rbenv/shims:\$HOME/.rvm/bin:\$PATH"
-                    ./jenkins_build.sh -t ios --upload-only
-                """
+                // 上传失败不阻断后续 Google Play / COS
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    sh """
+                        export PATH="/opt/homebrew/bin:/usr/local/bin:\$FLUTTER_HOME/bin:\$HOME/.rbenv/shims:\$HOME/.rvm/bin:\$PATH"
+                        ./jenkins_build.sh -t ios --upload-only
+                    """
+                }
             }
         }
 
@@ -479,10 +482,12 @@ Score Board - 构建报告
                     echo "上传 AAB 到 Google Play Store..."
                     echo "发布轨道: ${params.GOOGLE_PLAY_TRACK}"
                     
-                    sh """
-                        export PATH="/opt/homebrew/bin:/usr/local/bin:\$FLUTTER_HOME/bin:\$PATH"
-                        ./jenkins_build.sh -t aab --upload-only --track ${params.GOOGLE_PLAY_TRACK}
-                    """
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                        sh """
+                            export PATH="/opt/homebrew/bin:/usr/local/bin:\$FLUTTER_HOME/bin:\$PATH"
+                            ./jenkins_build.sh -t aab --upload-only --track ${params.GOOGLE_PLAY_TRACK}
+                        """
+                    }
                 }
             }
         }
@@ -497,6 +502,7 @@ Score Board - 构建报告
                 script {
                     echo "上传 APK 到腾讯云 COS..."
                     
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     // 检查并安装 coscmd
                     sh '''
                         echo "检查腾讯云 COS 上传依赖..."
@@ -562,6 +568,7 @@ Score Board - 构建报告
                             exit 1
                         fi
                     """
+                    }
                 }
             }
         }
