@@ -33,18 +33,16 @@ android {
 
     signingConfigs {
         create("release") {
-            if (keystorePropertiesFile.exists()) {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
-            } else {
-                // 与 texasWinRate 一致：共用 upload-keystore.jks（upload/android）
-                keyAlias = "upload"
-                keyPassword = "android"
-                storeFile = file("upload-keystore.jks")
-                storePassword = "android"
+            if (!keystorePropertiesFile.exists()) {
+                throw GradleException(
+                    "Release signing requires android/key.properties. " +
+                        "Run: ./jenkins_build.sh --prepare-android-signing"
+                )
             }
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
         }
     }
 

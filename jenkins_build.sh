@@ -70,6 +70,8 @@ IOS_API_KEY_PATH="${IOS_API_KEY_PATH:-${CERT_DIR}/4GN8P39YH9.p8}"
 # Android Google Play API 配置
 ANDROID_SERVICE_ACCOUNT_JSON="${ANDROID_SERVICE_ACCOUNT_JSON:-${CERT_DIR}/tudan.json}"
 ANDROID_PACKAGE_NAME="com.qualrb.scoreboard"
+# ScoreBoard 专用 upload key（勿与 texasWinRate 共用）
+GOOGLE_PLAY_UPLOAD_SHA1="${GOOGLE_PLAY_UPLOAD_SHA1:-8B:60:AB:7A:BA:1E:28:B4:3C:99:60:D5:2D:B0:01:A9:AB:79:50:FF}"
 
 # 腾讯云 COS 配置 (APK 上传)
 TENCENT_SECRET_ID="${TENCENT_SECRET_ID:-}"
@@ -412,11 +414,42 @@ parse_version() {
 
 # ==================== Android 签名准备 ====================
 
-materialize_keystore_from_env() {
-    local dest="$PROJECT_ROOT/android/app/upload-keystore.jks"
-    if [ -f "$dest" ]; then
+resolve_keytool() {
+    if [ -n "${JAVA_HOME:-}" ] && [ -x "${JAVA_HOME}/bin/keytool" ]; then
+        echo "${JAVA_HOME}/bin/keytool"
         return 0
     fi
+    if command -v keytool >/dev/null 2>&1; then
+        command -v keytool
+        return 0
+    fi
+    local candidate
+    for candidate in \
+        "/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool" \
+        "/Applications/Android Studio 2.app/Contents/jbr/Contents/Home/bin/keytool"; do
+        if [ -x "$candidate" ]; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
+normalize_sha1() {
+    echo "$1" | tr '[:lower:]' '[:upper:]' | tr -d ' :'
+}
+
+get_keystore_sha1() {
+    local keystore="$1"
+    local store_pass="$2"
+    local keytool_bin
+    keytool_bin="$(resolve_keytool)" || return 1
+    "$keytool_bin" -list -v -keystore "$keystore" -storepass "$store_pass" 2>/dev/null \
+        | grep "SHA1:" | head -1 | sed 's/.*SHA1: //' | tr -d ' '
+}
+
+materialize_keystore_from_env() {
+    local dest="$PROJECT_ROOT/android/app/upload-keystore.jks"
 
     if [ -n "${ANDROID_UPLOAD_KEYSTORE_BASE64:-}" ]; then
         log_info "从 ANDROID_UPLOAD_KEYSTORE_BASE64 写入 keystore..."
@@ -437,127 +470,99 @@ materialize_keystore_from_env() {
     return 1
 }
 
-collect_keystore_candidates() {
-    ANDROID_KEYSTORE_CANDIDATES=()
-
-    local static_candidates=(
-        "${ANDROID_UPLOAD_KEYSTORE:-}"
-        "${JENKINS_UPLOAD_KEYSTORE:-}"
-        "${CERT_DIR}/upload-keystore.jks"
-        "${CERT_DIR}/scoreboard-upload-keystore.jks"
-        "${PROJECT_ROOT}/certs/upload-keystore.jks"
-        "${PROJECT_ROOT}/android/app/upload-keystore.jks"
-        "/Users/dan/Desktop/code/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
-        "${HOME}/Desktop/code/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
-        "/Users/dan/Desktop/texas-rate/texaswinrate/texasWinRate/android/app/upload-keystore.jks"
-    )
-
-    local candidate
-    for candidate in "${static_candidates[@]}"; do
-        if [ -n "$candidate" ]; then
-            ANDROID_KEYSTORE_CANDIDATES+=("$candidate")
-        fi
-    done
-
-    if [ -d "$CERT_DIR" ]; then
-        while IFS= read -r candidate; do
-            ANDROID_KEYSTORE_CANDIDATES+=("$candidate")
-        done < <(find "$CERT_DIR" -maxdepth 2 \( -name 'upload-keystore.jks' -o -name '*upload*.jks' \) -type f 2>/dev/null | sort -u)
+verify_android_upload_key() {
+    local keystore="$PROJECT_ROOT/android/app/upload-keystore.jks"
+    local props="$PROJECT_ROOT/android/key.properties"
+    if [ ! -f "$keystore" ] || [ ! -f "$props" ]; then
+        return 1
     fi
-
-    local code_root
-    for code_root in \
-        "${HOME}/Desktop/code" \
-        "/Users/dan/Desktop/code" \
-        "$(dirname "$PROJECT_ROOT")"; do
-        if [ -d "$code_root" ]; then
-            while IFS= read -r candidate; do
-                ANDROID_KEYSTORE_CANDIDATES+=("$candidate")
-            done < <(find "$code_root" -maxdepth 6 -path '*/android/app/upload-keystore.jks' -type f 2>/dev/null | sort -u)
-        fi
-    done
+    local store_pass
+    store_pass=$(grep '^storePassword=' "$props" | cut -d= -f2-)
+    local sha1
+    sha1=$(get_keystore_sha1 "$keystore" "$store_pass")
+    if [ -z "$sha1" ]; then
+        log_error "无法读取 keystore 证书指纹，请检查 key.properties 密码"
+        return 1
+    fi
+    local expected actual
+    expected=$(normalize_sha1 "$GOOGLE_PLAY_UPLOAD_SHA1")
+    actual=$(normalize_sha1 "$sha1")
+    if [ "$actual" != "$expected" ]; then
+        log_error "Keystore SHA1 与 Google Play upload key 不匹配"
+        log_error "  当前: $sha1"
+        log_error "  需要: $GOOGLE_PLAY_UPLOAD_SHA1"
+        log_error "  请使用 ${CERT_DIR}/scoreboard-upload-keystore.jks（勿用 texas 共用 keystore）"
+        return 1
+    fi
+    log_success "Upload key SHA1 校验通过: $sha1"
+    return 0
 }
 
 prepare_android_signing() {
     log_info "准备 Android 签名..."
     log_info "CERT_DIR=${CERT_DIR}"
+    log_info "Google Play upload key SHA1: ${GOOGLE_PLAY_UPLOAD_SHA1}"
 
-    materialize_keystore_from_env || true
+    local keystore_source=""
+    local keystore_candidates=(
+        "${ANDROID_UPLOAD_KEYSTORE:-}"
+        "${CERT_DIR}/scoreboard-upload-keystore.jks"
+        "${PROJECT_ROOT}/certs/scoreboard-upload-keystore.jks"
+    )
 
-    if [ ! -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
-        collect_keystore_candidates
-        local candidate seen=""
-        for candidate in "${ANDROID_KEYSTORE_CANDIDATES[@]}"; do
-            if [[ " $seen " == *" $candidate "* ]]; then
-                continue
-            fi
-            seen="$seen $candidate"
-            if [ -f "$candidate" ]; then
-                mkdir -p "$PROJECT_ROOT/android/app"
-                cp "$candidate" "$PROJECT_ROOT/android/app/upload-keystore.jks"
-                log_info "已从 ${candidate} 复制 upload-keystore.jks"
-                break
-            fi
-        done
+    local candidate
+    for candidate in "${keystore_candidates[@]}"; do
+        if [ -n "$candidate" ] && [ -f "$candidate" ]; then
+            keystore_source="$candidate"
+            break
+        fi
+    done
+
+    if [ -z "$keystore_source" ]; then
+        if materialize_keystore_from_env; then
+            keystore_source="$PROJECT_ROOT/android/app/upload-keystore.jks"
+        else
+            log_error "未找到 ScoreBoard 专用 release keystore"
+            log_info "Google Play upload key SHA1: ${GOOGLE_PLAY_UPLOAD_SHA1}"
+            log_info "请将 scoreboard-upload-keystore.jks 放到: ${CERT_DIR}/"
+            log_info "或通过 ANDROID_UPLOAD_KEYSTORE / ANDROID_UPLOAD_KEYSTORE_BASE64 指定"
+            log_info "证书 PEM（供 Play Console 重置 upload key）: ${CERT_DIR}/scoreboard-upload-certificate.pem"
+            return 1
+        fi
+    else
+        mkdir -p "$PROJECT_ROOT/android/app"
+        cp "$keystore_source" "$PROJECT_ROOT/android/app/upload-keystore.jks"
+        log_info "已从 ${keystore_source} 复制 upload-keystore.jks"
     fi
 
-    if [ ! -f "$PROJECT_ROOT/android/key.properties" ]; then
-        if [ -f "${CERT_DIR}/scoreboard-key.properties" ]; then
-            cp "${CERT_DIR}/scoreboard-key.properties" "$PROJECT_ROOT/android/key.properties"
-            log_info "已从证书目录复制 scoreboard-key.properties"
-        elif [ -f "${CERT_DIR}/key.properties" ]; then
-            cp "${CERT_DIR}/key.properties" "$PROJECT_ROOT/android/key.properties"
-            log_info "已从证书目录复制 key.properties"
-        elif [ -n "${ANDROID_KEY_STORE_PASSWORD:-}" ] && [ -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
-            cat > "$PROJECT_ROOT/android/key.properties" << EOF
+    if [ -f "${CERT_DIR}/scoreboard-key.properties" ]; then
+        cp "${CERT_DIR}/scoreboard-key.properties" "$PROJECT_ROOT/android/key.properties"
+        log_info "已从证书目录复制 scoreboard-key.properties（专用签名）"
+    elif [ -n "${ANDROID_KEY_STORE_PASSWORD:-}" ]; then
+        cat > "$PROJECT_ROOT/android/key.properties" << EOF
 storePassword=${ANDROID_KEY_STORE_PASSWORD}
 keyPassword=${ANDROID_KEY_PASSWORD:-${ANDROID_KEY_STORE_PASSWORD}}
 keyAlias=${ANDROID_KEY_ALIAS:-upload}
 storeFile=upload-keystore.jks
 EOF
-            log_info "已从环境变量生成 android/key.properties"
-        elif [ -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ]; then
-            cat > "$PROJECT_ROOT/android/key.properties" << 'EOF'
-storePassword=android
-keyPassword=android
+        log_info "已从环境变量生成 android/key.properties"
+    else
+        cat > "$PROJECT_ROOT/android/key.properties" << 'EOF'
+storePassword=scoreboard123
+keyPassword=scoreboard123
 keyAlias=upload
 storeFile=upload-keystore.jks
 EOF
-            log_info "已从 upload-keystore.jks 生成 android/key.properties（upload/android）"
-        fi
+        log_info "已生成 scoreboard 专用 key.properties"
     fi
+
+    verify_android_upload_key || return 1
 }
 
 require_android_release_signing() {
-    prepare_android_signing
-    if [ -f "$PROJECT_ROOT/android/app/upload-keystore.jks" ] || [ -f "$PROJECT_ROOT/android/key.properties" ]; then
-        log_success "Android release 签名已就绪"
-        return 0
-    fi
-
-    log_error "未找到 release keystore"
-    collect_keystore_candidates
-    log_info "已搜索以下位置（均未找到可用 keystore）:"
-    local candidate seen=""
-    for candidate in "${ANDROID_KEYSTORE_CANDIDATES[@]}"; do
-        if [[ " $seen " == *" $candidate "* ]]; then
-            continue
-        fi
-        seen="$seen $candidate"
-        if [ -f "$candidate" ]; then
-            log_info "  [存在但未复制] $candidate"
-        else
-            log_info "  [不存在] $candidate"
-        fi
-    done
-    if [ -z "${ANDROID_UPLOAD_KEYSTORE_BASE64:-}${ANDROID_UPLOAD_KEYSTORE_DATA:-}" ]; then
-        log_info "  [未设置] ANDROID_UPLOAD_KEYSTORE_BASE64"
-    fi
-    log_info "任选其一即可:"
-    log_info "  1) 把 upload-keystore.jks 放到 ${CERT_DIR}（与 texasWinRate 共用）"
-    log_info "  2) 在 ${JENKINS_SECRETS_FILE} 设置 ANDROID_UPLOAD_KEYSTORE=/path/to/upload-keystore.jks"
-    log_info "  3) 在 Jenkins 凭据中设置 ANDROID_UPLOAD_KEYSTORE_BASE64（keystore 的 base64）"
-    return 1
+    prepare_android_signing || return 1
+    log_success "Android release 签名已就绪"
+    return 0
 }
 
 # ==================== 构建准备 ====================
