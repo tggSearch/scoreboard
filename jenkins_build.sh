@@ -71,7 +71,7 @@ IOS_API_KEY_PATH="${IOS_API_KEY_PATH:-${CERT_DIR}/4GN8P39YH9.p8}"
 ANDROID_SERVICE_ACCOUNT_JSON="${ANDROID_SERVICE_ACCOUNT_JSON:-${CERT_DIR}/tudan.json}"
 ANDROID_PACKAGE_NAME="com.qualrb.scoreboard"
 # ScoreBoard 专用 upload key（勿与 texasWinRate 共用）
-GOOGLE_PLAY_UPLOAD_SHA1="${GOOGLE_PLAY_UPLOAD_SHA1:-8B:60:AB:7A:BA:1E:28:B4:3C:99:60:D5:2D:B0:01:A9:AB:79:50:FF}"
+GOOGLE_PLAY_UPLOAD_SHA1="${GOOGLE_PLAY_UPLOAD_SHA1:-8E:9F:91:5E:D2:CE:FE:2D:64:0D:C5:B3:E3:CC:FD:60:50:D0:36:BD}"
 
 # 腾讯云 COS 配置 (APK 上传)
 TENCENT_SECRET_ID="${TENCENT_SECRET_ID:-}"
@@ -509,7 +509,7 @@ verify_android_upload_key() {
         log_error "Keystore SHA1 与 Google Play upload key 不匹配"
         log_error "  当前: $sha1"
         log_error "  需要: $GOOGLE_PLAY_UPLOAD_SHA1"
-        log_error "  请使用 ${CERT_DIR}/scoreboard-upload-keystore.jks（勿用 texas 共用 keystore）"
+        log_error "  请使用仓库 certs/scoreboard-upload-keystore.jks（勿用 texas 共用 keystore）"
         return 1
     fi
     log_success "Upload key SHA1 校验通过: $sha1"
@@ -522,10 +522,11 @@ prepare_android_signing() {
     log_info "Google Play upload key SHA1: ${GOOGLE_PLAY_UPLOAD_SHA1}"
 
     local keystore_source=""
+    # 仓库内专用 key 优先，便于 Jenkins 拉取即可打包
     local keystore_candidates=(
         "${ANDROID_UPLOAD_KEYSTORE:-}"
-        "${CERT_DIR}/scoreboard-upload-keystore.jks"
         "${PROJECT_ROOT}/certs/scoreboard-upload-keystore.jks"
+        "${CERT_DIR}/scoreboard-upload-keystore.jks"
     )
 
     local candidate
@@ -542,9 +543,9 @@ prepare_android_signing() {
         else
             log_error "未找到 ScoreBoard 专用 release keystore"
             log_info "Google Play upload key SHA1: ${GOOGLE_PLAY_UPLOAD_SHA1}"
-            log_info "请将 scoreboard-upload-keystore.jks 放到: ${CERT_DIR}/"
-            log_info "或通过 ANDROID_UPLOAD_KEYSTORE / ANDROID_UPLOAD_KEYSTORE_BASE64 指定"
-            log_info "证书 PEM（供 Play Console 重置 upload key）: ${CERT_DIR}/scoreboard-upload-certificate.pem"
+            log_info "期望路径: ${PROJECT_ROOT}/certs/scoreboard-upload-keystore.jks"
+            log_info "或: ${CERT_DIR}/scoreboard-upload-keystore.jks"
+            log_info "或 ANDROID_UPLOAD_KEYSTORE / ANDROID_UPLOAD_KEYSTORE_BASE64"
             return 1
         fi
     else
@@ -553,9 +554,12 @@ prepare_android_signing() {
         log_info "已从 ${keystore_source} 复制 upload-keystore.jks"
     fi
 
-    if [ -f "${CERT_DIR}/scoreboard-key.properties" ]; then
+    if [ -f "${PROJECT_ROOT}/certs/scoreboard-key.properties" ]; then
+        cp "${PROJECT_ROOT}/certs/scoreboard-key.properties" "$PROJECT_ROOT/android/key.properties"
+        log_info "已从仓库 certs/ 复制 scoreboard-key.properties"
+    elif [ -f "${CERT_DIR}/scoreboard-key.properties" ]; then
         cp "${CERT_DIR}/scoreboard-key.properties" "$PROJECT_ROOT/android/key.properties"
-        log_info "已从证书目录复制 scoreboard-key.properties（专用签名）"
+        log_info "已从证书目录复制 scoreboard-key.properties"
     elif [ -n "${ANDROID_KEY_STORE_PASSWORD:-}" ]; then
         cat > "$PROJECT_ROOT/android/key.properties" << EOF
 storePassword=${ANDROID_KEY_STORE_PASSWORD}

@@ -52,8 +52,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local signing copies (dedicated ScoreBoard keystore IS tracked under certs/)
 certs/upload-keystore.jks
-certs/scoreboard-upload-keystore.jks
-**/upload-keystore.jks
-android/key.properties
 android/app/upload-keystore.jks
+android/app/*.jks.bak
+android/key.properties
