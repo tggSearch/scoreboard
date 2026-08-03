@@ -19,7 +19,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.qualrb.scoreboard"
-    compileSdk = flutter.compileSdkVersion
+    // Google Play: as of 2026-08-31 apps must target Android 16 (API 36)+
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -49,7 +50,7 @@ android {
     defaultConfig {
         applicationId = "com.qualrb.scoreboard"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
