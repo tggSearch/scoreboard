@@ -58,3 +58,10 @@ certs/upload-keystore.jks
 android/app/upload-keystore.jks
 android/app/*.jks.bak
 android/key.properties
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/README.md

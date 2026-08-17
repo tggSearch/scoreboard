@@ -1,0 +1,51 @@
+# frozen_string_literal: true
+
+default_platform(:ios)
+
+platform :ios do
+  before_all do
+    ENV["MATCH_PASSWORD"] = ENV.fetch("MATCH_PASSWORD", "")
+    ENV["FASTLANE_SKIP_CONFIRMATIONS"] = "1"
+    ENV["FASTLANE_HIDE_CHANGELOG"] = "1"
+
+    app_store_connect_api_key(
+      key_id: ENV.fetch("IOS_API_KEY_ID", "4GN8P39YH9"),
+      issuer_id: ENV.fetch("IOS_API_ISSUER_ID", "aabd36b8-9b8f-44ed-a8db-5afff7624ad6"),
+      key_filepath: ENV.fetch("IOS_API_KEY_PATH", "/Users/dan/Documents/cert/4GN8P39YH9.p8"),
+      duration: 1200,
+      in_house: false
+    )
+  end
+
+  desc "Sync App Store certificates & profiles via match (git branch per project)"
+  lane :sync_certificates do |options|
+    readonly = options.fetch(:readonly, false)
+    readonly = true if readonly.to_s == "true"
+    readonly = false if readonly.to_s == "false"
+
+    match(
+      type: "appstore",
+      readonly: readonly,
+      shallow_clone: true,
+      clone_branch_directly: readonly, # first create needs full clone to create branch
+      force_for_new_devices: false,
+      skip_confirmation: true,
+      skip_set_partition_list: true,
+      api_key: lane_context[SharedValues::APP_STORE_CONNECT_API_KEY]
+    )
+  end
+
+  desc "Force regenerate profiles (keep existing certs when possible)"
+  lane :renew_profiles do
+    match(
+      type: "appstore",
+      readonly: false,
+      force: true,
+      shallow_clone: true,
+      clone_branch_directly: false,
+      skip_confirmation: true,
+      skip_set_partition_list: true,
+      api_key: lane_context[SharedValues::APP_STORE_CONNECT_API_KEY]
+    )
+  end
+end

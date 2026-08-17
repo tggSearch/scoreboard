@@ -1,214 +1,256 @@
 #!/bin/bash
-# Score Board iOS 签名准备：安装描述文件，校验证书与 profile
-
+# iOS signing via fastlane match (App Store Connect API, no Apple ID password)
 set -euo pipefail
 
 CERT_DIR="${CERT_DIR:-/Users/dan/Documents/cert}"
 BUNDLE_ID="${BUNDLE_ID:-com.qualrb.scoreBoardPro}"
-IOS_PROVISIONING_PROFILE="${IOS_PROVISIONING_PROFILE:-scoreboard}"
+MATCH_GIT_BRANCH="${MATCH_GIT_BRANCH:-scoreboard}"
+TEAM_ID="${TEAM_ID:-483V3ZF35S}"
+IOS_API_KEY_ID="${IOS_API_KEY_ID:-4GN8P39YH9}"
+IOS_API_ISSUER_ID="${IOS_API_ISSUER_ID:-aabd36b8-9b8f-44ed-a8db-5afff7624ad6}"
+IOS_API_KEY_PATH="${IOS_API_KEY_PATH:-${CERT_DIR}/4GN8P39YH9.p8}"
+# match git 加密口令（非 Apple 密码）；已内置默认值，无需手动设置
+MATCH_PASSWORD="${MATCH_PASSWORD:-match}"
+MATCH_READONLY="${MATCH_READONLY:-true}"
 MOBILE_DIR="$(cd "$(dirname "$0")" && pwd)"
-IOS_PROVISIONING_PROFILE_PATH="${IOS_PROVISIONING_PROFILE_PATH:-${MOBILE_DIR}/certs/scoreboard.mobileprovision}"
-PROVISION_DIR="${HOME}/Library/MobileDevice/Provisioning Profiles"
+PROFILE_NAME="match AppStore ${BUNDLE_ID}"
 
-log() { echo "[ios-signing] $*"; }
-
-install_profile() {
-    local src="$1"
-    local dest_name
-    dest_name=$(/usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin <<< "$(security cms -D -i "$src")" 2>/dev/null || true)
-    if [ -z "$dest_name" ]; then
-        dest_name=$(basename "$src")
-    else
-        dest_name="${dest_name}.mobileprovision"
-    fi
-    mkdir -p "$PROVISION_DIR"
-    cp "$src" "${PROVISION_DIR}/${dest_name}"
-    log "已安装描述文件: ${PROVISION_DIR}/${dest_name}"
+resolve_profile_name() {
+  python3 - "$PROVISION_DIR" "$BUNDLE_ID" "$PROFILE_NAME" <<'PY'
+import os, sys, subprocess, plistlib
+prov_dir, bundle_id, fallback = sys.argv[1:4]
+best = None
+best_mtime = -1
+if not os.path.isdir(prov_dir):
+    print(fallback)
+    raise SystemExit
+for name in os.listdir(prov_dir):
+    if not name.endswith(".mobileprovision"):
+        continue
+    path = os.path.join(prov_dir, name)
+    try:
+        raw = subprocess.check_output(["security", "cms", "-D", "-i", path], stderr=subprocess.DEVNULL)
+        data = plistlib.loads(raw)
+    except Exception:
+        continue
+    entitlements = data.get("Entitlements") or {}
+    app_id = entitlements.get("application-identifier") or ""
+    if not app_id.endswith(bundle_id):
+        continue
+    pname = data.get("Name") or ""
+    if not pname.startswith("match AppStore"):
+        continue
+    mtime = os.path.getmtime(path)
+    if mtime > best_mtime:
+        best_mtime = mtime
+        best = pname
+print(best or fallback)
+PY
 }
 
+PROVISION_DIR="${HOME}/Library/MobileDevice/Provisioning Profiles"
+
+log() { echo "[ios-signing/match] $*"; }
+
+export PATH="/opt/homebrew/bin:/usr/local/bin:${PATH}"
+export MATCH_PASSWORD
+export MATCH_GIT_BRANCH
+export IOS_API_KEY_ID IOS_API_ISSUER_ID IOS_API_KEY_PATH
+export FASTLANE_SKIP_CONFIRMATIONS=1
+export FASTLANE_HIDE_CHANGELOG=1
+export CI="${CI:-true}"
+
+# Optional proxy (Jenkins nodes often need it for Apple / GitHub)
+if [ -z "${HTTP_PROXY:-}${http_proxy:-}" ]; then
+  export HTTP_PROXY="${HTTP_PROXY:-http://127.0.0.1:7897}"
+  export HTTPS_PROXY="${HTTPS_PROXY:-http://127.0.0.1:7897}"
+  export http_proxy="${http_proxy:-$HTTP_PROXY}"
+  export https_proxy="${https_proxy:-$HTTPS_PROXY}"
+fi
+
 sync_export_options() {
-    local profile_name="$1"
-    local export_options="${MOBILE_DIR}/ios/ExportOptions.plist"
-    if [ ! -f "$export_options" ]; then
-        return
-    fi
-    /usr/libexec/PlistBuddy -c "Set :provisioningProfiles:${BUNDLE_ID} ${profile_name}" "$export_options" 2>/dev/null || \
-        /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:${BUNDLE_ID} string ${profile_name}" "$export_options"
-    log "已同步 ExportOptions.plist -> ${profile_name}"
+  local profile_name="$1"
+  local export_options="${MOBILE_DIR}/ios/ExportOptions.plist"
+  if [ ! -f "$export_options" ]; then
+    mkdir -p "${MOBILE_DIR}/ios"
+    cat > "$export_options" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store</string>
+	<key>teamID</key>
+	<string>${TEAM_ID}</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>signingCertificate</key>
+	<string>iPhone Distribution</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>${BUNDLE_ID}</key>
+		<string>${profile_name}</string>
+	</dict>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>uploadBitcode</key>
+	<false/>
+</dict>
+</plist>
+PLIST
+    log "已创建 ExportOptions.plist"
+    return
+  fi
+  /usr/libexec/PlistBuddy -c "Set :method app-store" "$export_options" 2>/dev/null || true
+  /usr/libexec/PlistBuddy -c "Set :teamID ${TEAM_ID}" "$export_options" 2>/dev/null || \
+    /usr/libexec/PlistBuddy -c "Add :teamID string ${TEAM_ID}" "$export_options"
+  /usr/libexec/PlistBuddy -c "Set :signingStyle manual" "$export_options" 2>/dev/null || \
+    /usr/libexec/PlistBuddy -c "Add :signingStyle string manual" "$export_options"
+  /usr/libexec/PlistBuddy -c "Set :signingCertificate iPhone Distribution" "$export_options" 2>/dev/null || \
+    /usr/libexec/PlistBuddy -c "Add :signingCertificate string iPhone Distribution" "$export_options"
+  /usr/libexec/PlistBuddy -c "Set :provisioningProfiles:${BUNDLE_ID} ${profile_name}" "$export_options" 2>/dev/null || \
+    /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:${BUNDLE_ID} string ${profile_name}" "$export_options"
+  log "已同步 ExportOptions.plist -> ${profile_name}"
 }
 
 sync_xcode_project() {
-    local profile_name="$1"
-    local pbxproj="${MOBILE_DIR}/ios/Runner.xcodeproj/project.pbxproj"
-    if [ ! -f "$pbxproj" ]; then
-        return
-    fi
-    python3 - <<PY "$pbxproj" "$profile_name"
+  local profile_name="$1"
+  local pbxproj="${MOBILE_DIR}/ios/Runner.xcodeproj/project.pbxproj"
+  if [ ! -f "$pbxproj" ]; then
+    return
+  fi
+  python3 - "$pbxproj" "$profile_name" "$BUNDLE_ID" "$TEAM_ID" <<'PY'
 import re, sys
-path, profile = sys.argv[1:3]
+path, profile, bundle_id, team_id = sys.argv[1:5]
 text = open(path).read()
-pattern = re.compile(
-    r'(97C147071CF9000F007C117D /\* Release \*/ = \{.*?name = Release;\n\t\t\};'
-    r'|249021D4217E4FDB00AE95B9 /\* Profile \*/ = \{.*?name = Profile;\n\t\t\};'
-    r'|97C147061CF9000F007C117D /\* Debug \*/ = \{.*?name = Debug;\n\t\t\};)',
-    re.S,
-)
-def repl(block):
-    if 'CODE_SIGN_STYLE = Manual' not in block:
+prof_lit = profile if re.fullmatch(r"[A-Za-z0-9_.-]+", profile) else f'"{profile}"'
+
+def patch_block(block: str) -> str:
+    if f"PRODUCT_BUNDLE_IDENTIFIER = {bundle_id};" not in block:
         return block
-    return re.sub(
+    block = re.sub(r"\t\t\t\tCODE_SIGN_IDENTITY = \"[^\"]*\";\n", "", block)
+    if '"CODE_SIGN_IDENTITY[sdk=iphoneos*]"' in block:
+        block = re.sub(
+            r'"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "[^"]*";',
+            '"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";',
+            block,
+        )
+    else:
+        block = block.replace(
+            "CLANG_ENABLE_MODULES = YES;\n",
+            'CLANG_ENABLE_MODULES = YES;\n\t\t\t\t"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";\n',
+            1,
+        )
+    block = re.sub(r"CODE_SIGN_STYLE = Automatic;", "CODE_SIGN_STYLE = Manual;", block)
+    if "CODE_SIGN_STYLE =" not in block:
+        block = block.replace(
+            '"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";\n',
+            '"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";\n\t\t\t\tCODE_SIGN_STYLE = Manual;\n',
+            1,
+        )
+    if '"DEVELOPMENT_TEAM[sdk=iphoneos*]"' in block:
+        block = re.sub(
+            r'"DEVELOPMENT_TEAM\[sdk=iphoneos\*\]" = [^;]+;',
+            f'"DEVELOPMENT_TEAM[sdk=iphoneos*]" = {team_id};',
+            block,
+        )
+    elif "DEVELOPMENT_TEAM =" in block:
+        block = re.sub(r"DEVELOPMENT_TEAM = [^;]+;", f"DEVELOPMENT_TEAM = {team_id};", block)
+    else:
+        block = block.replace(
+            "CODE_SIGN_STYLE = Manual;\n",
+            f"CODE_SIGN_STYLE = Manual;\n\t\t\t\tDEVELOPMENT_TEAM = {team_id};\n",
+            1,
+        )
+    if '"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]"' in block:
+        block = re.sub(
+            r'"PROVISIONING_PROFILE_SPECIFIER\[sdk=iphoneos\*\]" = [^;]+;',
+            f'"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = {prof_lit};',
+            block,
+        )
+    elif "PROVISIONING_PROFILE_SPECIFIER =" in block:
+        block = re.sub(
+            r"PROVISIONING_PROFILE_SPECIFIER = [^;]+;",
+            f"PROVISIONING_PROFILE_SPECIFIER = {prof_lit};",
+            block,
+        )
+    else:
+        block = block.replace(
+            "CODE_SIGN_STYLE = Manual;\n",
+            "CODE_SIGN_STYLE = Manual;\n"
+            f"\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = {prof_lit};\n",
+            1,
+        )
+    return block
+
+parts = []
+last = 0
+for m in re.finditer(r"(\w+ /\* \w+ \*/ = \{.*?name = \w+;\n\t\t\};)", text, re.S):
+    block = m.group(1)
+    if f"PRODUCT_BUNDLE_IDENTIFIER = {bundle_id};" in block:
+        block = patch_block(block)
+    parts.append(text[last : m.start()])
+    parts.append(block)
+    last = m.end()
+parts.append(text[last:])
+new_text = "".join(parts)
+if new_text != text:
+    open(path, "w").write(new_text)
+    print("updated")
+else:
+    nt = re.sub(
         r'"PROVISIONING_PROFILE_SPECIFIER\[sdk=iphoneos\*\]" = [^;]+;',
-        f'"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = {profile};',
-        block,
+        f'"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = {prof_lit};',
+        text,
     )
-new_text, count = pattern.subn(lambda m: repl(m.group(0)), text)
-if count:
-    open(path, 'w').write(new_text)
+    if nt != text:
+        open(path, "w").write(nt)
+        print("updated-fallback")
+    else:
+        print("noop")
 PY
-    log "已同步 Xcode 签名 -> ${profile_name}"
+  log "已同步 Xcode 签名 -> ${profile_name}"
 }
 
 log "Bundle ID: $BUNDLE_ID"
-log "Profile Name: $IOS_PROVISIONING_PROFILE"
-log "CERT_DIR: $CERT_DIR"
+log "Match branch: $MATCH_GIT_BRANCH"
+log "API Key: $IOS_API_KEY_ID"
+log "Key path: $IOS_API_KEY_PATH"
+log "Readonly: $MATCH_READONLY"
+
+if [ ! -f "$IOS_API_KEY_PATH" ]; then
+  echo "ERROR: missing App Store Connect API key: $IOS_API_KEY_PATH" >&2
+  exit 1
+fi
+
+if [ ! -d "${MOBILE_DIR}/fastlane" ]; then
+  echo "ERROR: missing ${MOBILE_DIR}/fastlane" >&2
+  exit 1
+fi
+
+if ! command -v fastlane >/dev/null 2>&1; then
+  echo "ERROR: fastlane not found in PATH" >&2
+  exit 1
+fi
+
+if [ -n "${KEYCHAIN_PASSWORD:-}" ]; then
+  KEYCHAIN_PATH="${HOME}/Library/Keychains/login.keychain-db"
+  security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" || true
+  security set-keychain-settings -u "$KEYCHAIN_PATH" || true
+  security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" 2>/dev/null || true
+fi
 
 mkdir -p "$PROVISION_DIR"
+cd "$MOBILE_DIR"
 
-installed=false
-for candidate in \
-    "$IOS_PROVISIONING_PROFILE_PATH" \
-    "${MOBILE_DIR}/certs/scoreboard.mobileprovision" \
-    "${CERT_DIR}/scoreboard.mobileprovision" \
-    "${CERT_DIR}/scoreBoardPro.mobileprovision" \
-    "${CERT_DIR}/com.qualrb.scoreBoardPro.mobileprovision" \
-    "${HOME}/Downloads/scoreboard.mobileprovision"; do
-    if [ -f "$candidate" ]; then
-        install_profile "$candidate"
-        installed=true
-        break
-    fi
-done
+log "Running: fastlane sync_certificates readonly:${MATCH_READONLY}"
+fastlane sync_certificates readonly:"${MATCH_READONLY}"
 
-if [ "$installed" = false ]; then
-    log "未找到 scoreboard 描述文件"
-    log "请将 scoreboard.mobileprovision 放到: ${MOBILE_DIR}/certs/scoreboard.mobileprovision"
-fi
+PROFILE_NAME="$(resolve_profile_name)"
+log "Resolved profile: $PROFILE_NAME"
+sync_export_options "$PROFILE_NAME"
+sync_xcode_project "$PROFILE_NAME"
 
-log "可用签名证书:"
-security find-identity -v -p codesigning || true
-
-RESOLVED_PROFILE=""
-if command -v python3 >/dev/null 2>&1; then
-    RESOLVED_PROFILE=$(python3 - <<'PY' "$PROVISION_DIR" "$BUNDLE_ID" "$IOS_PROVISIONING_PROFILE" "$CERT_DIR"
-import glob, os, plistlib, re, subprocess, sys, tempfile
-provision_dir, bundle_id, preferred_name, cert_dir = sys.argv[1:5]
-
-def profile_cert_fingerprints(path):
-    raw = subprocess.check_output(["security", "cms", "-D", "-i", path])
-    data = plistlib.loads(raw)
-    fps = []
-    for cert_bytes in data.get("DeveloperCertificates", []):
-        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".der")
-        try:
-            tmp.write(cert_bytes)
-            tmp.close()
-            out = subprocess.check_output(
-                ["openssl", "x509", "-inform", "DER", "-in", tmp.name, "-noout", "-fingerprint", "-sha1"],
-                text=True,
-            )
-            fps.append(out.split("=", 1)[1].strip().replace(":", "").upper())
-        finally:
-            os.unlink(tmp.name)
-    return fps
-
-def keychain_distribution_fingerprints():
-    try:
-        out = subprocess.check_output(["security", "find-identity", "-v", "-p", "codesigning"], text=True)
-    except subprocess.CalledProcessError:
-        return []
-    result = []
-    for line in out.splitlines():
-        m = re.match(r'\s*\d+\)\s+([0-9A-F]+)\s+"(.+)"\s*$', line.strip())
-        if m and "Distribution" in m.group(2):
-            result.append((m.group(1).upper(), m.group(2)))
-    return result
-
-def read_profile(path):
-    raw = subprocess.check_output(["security", "cms", "-D", "-i", path])
-    data = plistlib.loads(raw)
-    app_id = data.get("Entitlements", {}).get("application-identifier", "")
-    return {
-        "path": path,
-        "name": data.get("Name", ""),
-        "type": data.get("ProvisionsAllDevices", False) and "Enterprise" or (
-            "Development" if data.get("ProvisionedDevices") else "AppStore"
-        ),
-        "bundle_match": bundle_id in app_id,
-        "fps": profile_cert_fingerprints(path),
-    }
-
-keychain_fps = keychain_distribution_fingerprints()
-candidates = []
-for path in glob.glob(provision_dir + "/*.mobileprovision"):
-    try:
-        info = read_profile(path)
-    except Exception:
-        continue
-    if not info["bundle_match"]:
-        continue
-    cert_ok = bool(keychain_fps) and any(fp in info["fps"] for fp, _ in keychain_fps)
-    print(
-        f"[ios-signing] 发现 Profile: {info['name']} | 类型≈{info['type']} | 证书匹配={'是' if cert_ok else '否'}",
-        file=sys.stderr,
-    )
-    candidates.append((info, cert_ok))
-
-if not candidates:
-    print(f"[ios-signing] ✗ 未找到 {bundle_id} 的描述文件", file=sys.stderr)
-    sys.exit(1)
-
-store_ok = [c for c, cert_ok in candidates if c["type"] == "AppStore" and cert_ok]
-store_any = [c for c, _ in candidates if c["type"] == "AppStore"]
-name_ok = [c for c, cert_ok in candidates if c["name"] == preferred_name and cert_ok]
-name_any = [c for c, _ in candidates if c["name"] == preferred_name]
-
-chosen = None
-if name_ok:
-    chosen = name_ok[0]
-elif name_any:
-    chosen = name_any[0]
-    print(f"[ios-signing] ⚠ Profile {preferred_name} 证书不匹配，仍尝试使用", file=sys.stderr)
-else:
-    print(f"[ios-signing] ✗ 未找到名为 {preferred_name} 的描述文件", file=sys.stderr)
-    print("[ios-signing] 请将 scoreboard.mobileprovision 放到:", file=sys.stderr)
-    print(f"[ios-signing]   {cert_dir}/scoreboard.mobileprovision", file=sys.stderr)
-    print("[ios-signing]   或设置 IOS_PROVISIONING_PROFILE_PATH 环境变量", file=sys.stderr)
-    if candidates:
-        print("[ios-signing] 当前 bundle 匹配的其他 profile:", file=sys.stderr)
-        for c, _ in candidates:
-            print(f"[ios-signing]   - {c['name']} ({c['type']})", file=sys.stderr)
-    sys.exit(1)
-
-if chosen["type"] == "Development":
-    print(f"[ios-signing] ✗ {chosen['name']} 是 Development，不能用于 flutter build ipa", file=sys.stderr)
-    sys.exit(1)
-
-if keychain_fps and not any(fp in chosen["fps"] for fp, _ in keychain_fps):
-    print(f"[ios-signing] ✗ {chosen['name']} 未包含 Distribution 证书 483V3ZF35S", file=sys.stderr)
-    sys.exit(1)
-
-print(f"[ios-signing] ✓ 选用 Profile: {chosen['name']} ({chosen['path']})", file=sys.stderr)
-print(chosen["name"])
-PY
-)
-fi
-
-if [ -n "$RESOLVED_PROFILE" ]; then
-    export IOS_PROVISIONING_PROFILE="$RESOLVED_PROFILE"
-    echo "IOS_PROVISIONING_PROFILE=${RESOLVED_PROFILE}" > "${MOBILE_DIR}/ios/ci_provisioning_profile.env"
-    sync_export_options "$RESOLVED_PROFILE"
-    sync_xcode_project "$RESOLVED_PROFILE"
-fi
-
-log "最终 Profile Name: ${IOS_PROVISIONING_PROFILE:-unknown}"
-log "iOS 签名准备完成"
+log "Done. Profile: $PROFILE_NAME"
+security find-identity -v -p codesigning | head -20 || true
+ls -la "$PROVISION_DIR" | tail -20 || true

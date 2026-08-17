@@ -1,0 +1,6 @@
+git_url("git@github.com:tggSearch/fastlane.git")
+git_branch("scoreboard")
+storage_mode("git")
+type("appstore")
+app_identifier(["com.qualrb.scoreBoardPro"])
+team_id("483V3ZF35S")

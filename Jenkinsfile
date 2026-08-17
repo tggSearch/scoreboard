@@ -63,17 +63,19 @@ pipeline {
         APP_NAME = 'scoreBoard'
         BUNDLE_ID = 'com.qualrb.scoreBoardPro'
         TEAM_ID = '483V3ZF35S'
-        IOS_PROVISIONING_PROFILE = 'scoreboard'
+        IOS_PROVISIONING_PROFILE = "match AppStore com.qualrb.scoreBoardPro"
         
         // 证书目录（敏感密钥放在节点 ${CERT_DIR}/jenkins_secrets.env）
         CERT_DIR = "${env.CERT_DIR ?: '/Users/dan/Documents/cert'}"
-        IOS_PROVISIONING_PROFILE_PATH = "${env.IOS_PROVISIONING_PROFILE_PATH ?: "${WORKSPACE}/certs/scoreboard.mobileprovision"}"
         JENKINS_SECRETS_FILE = "${env.JENKINS_SECRETS_FILE ?: "${CERT_DIR}/jenkins_secrets.env"}"
         
         // iOS App Store Connect API 配置（从 Jenkins 环境变量或 secrets 文件读取）
-        IOS_API_KEY_ID = "${env.IOS_API_KEY_ID ?: ''}"
-        IOS_API_ISSUER_ID = "${env.IOS_API_ISSUER_ID ?: ''}"
-        IOS_API_KEY_PATH = "${env.IOS_API_KEY_PATH ?: "${CERT_DIR}/4GN8P39YH9.p8"}"
+        IOS_API_KEY_ID = "4GN8P39YH9"
+        IOS_API_ISSUER_ID = "aabd36b8-9b8f-44ed-a8db-5afff7624ad6"
+        MATCH_GIT_BRANCH = "scoreboard"
+        MATCH_PASSWORD = "match"
+        MATCH_READONLY = "true"
+        IOS_API_KEY_PATH = "${CERT_DIR}/4GN8P39YH9.p8"
         
         // Android Google Play API 配置
         ANDROID_SERVICE_ACCOUNT_JSON = "${env.ANDROID_SERVICE_ACCOUNT_JSON ?: "${CERT_DIR}/tudan.json"}"
@@ -353,7 +355,15 @@ pipeline {
                         sh '''
                             export PATH="/opt/homebrew/bin:/usr/local/bin:$FLUTTER_HOME/bin:$HOME/.rbenv/shims:$HOME/.rvm/bin:$PATH"
                             export BUNDLE_ID=com.qualrb.scoreBoardPro
-                            export IOS_PROVISIONING_PROFILE=scoreboard
+                            export TEAM_ID=483V3ZF35S
+                            export MATCH_GIT_BRANCH=scoreboard
+                            export MATCH_PASSWORD="${MATCH_PASSWORD:-match}"
+                            export MATCH_READONLY="${MATCH_READONLY:-true}"
+                            export IOS_API_KEY_ID="${IOS_API_KEY_ID}"
+                            export IOS_API_ISSUER_ID="${IOS_API_ISSUER_ID}"
+                            export IOS_API_KEY_PATH="${IOS_API_KEY_PATH}"
+                            export CERT_DIR="${CERT_DIR}"
+                            chmod +x jenkins_ios_signing_setup.sh
                             ./jenkins_ios_signing_setup.sh
                         '''
                     }
