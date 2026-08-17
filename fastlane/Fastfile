@@ -4,7 +4,7 @@ default_platform(:ios)
 
 platform :ios do
   before_all do
-    ENV["MATCH_PASSWORD"] = ENV.fetch("MATCH_PASSWORD", "")
+    ENV["MATCH_PASSWORD"] = ENV.fetch("MATCH_PASSWORD", "match")
     ENV["FASTLANE_SKIP_CONFIRMATIONS"] = "1"
     ENV["FASTLANE_HIDE_CHANGELOG"] = "1"
 
@@ -27,7 +27,7 @@ platform :ios do
       type: "appstore",
       readonly: readonly,
       shallow_clone: true,
-      clone_branch_directly: readonly, # first create needs full clone to create branch
+      clone_branch_directly: readonly,
       force_for_new_devices: false,
       skip_confirmation: true,
       skip_set_partition_list: true,
