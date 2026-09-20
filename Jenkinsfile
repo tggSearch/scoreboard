@@ -70,12 +70,12 @@ pipeline {
         JENKINS_SECRETS_FILE = "${env.JENKINS_SECRETS_FILE ?: "${CERT_DIR}/jenkins_secrets.env"}"
         
         // iOS App Store Connect API 配置（从 Jenkins 环境变量或 secrets 文件读取）
-        IOS_API_KEY_ID = "4GN8P39YH9"
+        IOS_API_KEY_ID = "RM9A47XN3A"
         IOS_API_ISSUER_ID = "aabd36b8-9b8f-44ed-a8db-5afff7624ad6"
         MATCH_GIT_BRANCH = "scoreboard"
         MATCH_PASSWORD = "match"
         MATCH_READONLY = "true"
-        IOS_API_KEY_PATH = "${CERT_DIR}/4GN8P39YH9.p8"
+        IOS_API_KEY_PATH = "${CERT_DIR}/RM9A47XN3A.p8"
         
         // Android Google Play API 配置
         ANDROID_SERVICE_ACCOUNT_JSON = "${env.ANDROID_SERVICE_ACCOUNT_JSON ?: "${CERT_DIR}/tudan.json"}"

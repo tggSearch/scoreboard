@@ -58,12 +58,6 @@ def patch_block(block: str) -> str:
         )
     if "PROVISIONING_PROFILE_SPECIFIER =" in block:
         block = re.sub(
-            r"(?<!\[sdk=iphoneos\*\])PROVISIONING_PROFILE_SPECIFIER = [^;]+;",
-            'PROVISIONING_PROFILE_SPECIFIER = "";',
-            block,
-        )
-        # simpler: blank non-sdk line if present
-        block = re.sub(
             r"\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = [^;]+;",
             '\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "";',
             block,

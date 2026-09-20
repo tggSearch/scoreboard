@@ -37,7 +37,7 @@ resolve_ios_api_credentials() {
     if [ ! -f "$IOS_API_KEY_PATH" ]; then
         local candidate
         for candidate in \
-            "${CERT_DIR}/4GN8P39YH9.p8" \
+            "${CERT_DIR}/RM9A47XN3A.p8" \
             "${CERT_DIR}"/AuthKey_*.p8 \
             "${CERT_DIR}"/*.p8; do
             if [ -f "$candidate" ]; then
@@ -65,7 +65,7 @@ resolve_ios_api_credentials() {
 # iOS App Store Connect API 配置
 IOS_API_KEY_ID="${IOS_API_KEY_ID:-}"
 IOS_API_ISSUER_ID="${IOS_API_ISSUER_ID:-}"
-IOS_API_KEY_PATH="${IOS_API_KEY_PATH:-${CERT_DIR}/4GN8P39YH9.p8}"
+IOS_API_KEY_PATH="${IOS_API_KEY_PATH:-${CERT_DIR}/RM9A47XN3A.p8}"
 
 # Android Google Play API 配置
 ANDROID_SERVICE_ACCOUNT_JSON="${ANDROID_SERVICE_ACCOUNT_JSON:-${CERT_DIR}/tudan.json}"
