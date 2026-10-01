@@ -51,12 +51,7 @@ pipeline {
         LANG = "en_US.UTF-8"
         LC_ALL = "en_US.UTF-8"
         
-        // 网络配置 - 使用代理直连 pub.dev（不使用镜像避免 TLS 错误）
-        HTTP_PROXY = "http://127.0.0.1:7897"
-        HTTPS_PROXY = "http://127.0.0.1:7897"
-        http_proxy = "http://127.0.0.1:7897"
-        https_proxy = "http://127.0.0.1:7897"
-        ALL_PROXY = "socks5://127.0.0.1:7897"
+        // 不强制本地代理。7897 未启动时，pub.dev 的 TLS 会失败。
         NO_PROXY = "localhost,127.0.0.1"
         
         // 应用信息
@@ -242,6 +237,7 @@ pipeline {
             steps {
                 sh '''
                     export PATH="/opt/homebrew/bin:/usr/local/bin:$FLUTTER_HOME/bin:$HOME/.rbenv/shims:$HOME/.rvm/bin:$PATH"
+                    unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy
                     flutter pub get
                 '''
             }
@@ -532,14 +528,40 @@ Score Board - 构建报告
                         # 添加 Python bin 到 PATH
                         export PATH="\$HOME/.local/bin:\$HOME/Library/Python/3.9/bin:\$HOME/Library/Python/3.10/bin:\$HOME/Library/Python/3.11/bin:\$PATH"
                         
-                        # 清除代理设置 - 腾讯云是国内服务，不需要走代理
-                        unset HTTP_PROXY
-                        unset HTTPS_PROXY
-                        unset http_proxy
-                        unset https_proxy
-                        unset ALL_PROXY
-                        unset all_proxy
-                        echo "已清除代理设置，腾讯云 COS 将使用直连"
+                        # 腾讯云 COS 不走 VPN / HTTP 代理。Tigerleap 的 TUN 会抢走默认路由，
+                        # 仅 unset 代理变量不够，还要把套接字绑到局域网网卡。
+                        unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy
+                        unset SOCKS_PROXY SOCKS5_PROXY socks_proxy socks5_proxy
+                        export NO_PROXY="localhost,127.0.0.1,.myqcloud.com,.tencentcos.cn"
+                        export no_proxy="\$NO_PROXY"
+                        BIND_ADDR=\$(ipconfig getifaddr en1 2>/dev/null || ipconfig getifaddr en0 2>/dev/null || true)
+                        if [ -n "\$BIND_ADDR" ]; then
+                            COS_DIRECT_DIR=\$(mktemp -d)
+                            cat > "\$COS_DIRECT_DIR/sitecustomize.py" << PY
+import os, socket
+src = os.environ.get("COS_BIND_ADDR", "")
+if src:
+    _orig_connect = socket.socket.connect
+    def connect(self, address):
+        try:
+            ip, port = self.getsockname()[:2]
+        except OSError:
+            ip, port = "", 0
+        host = address[0] if isinstance(address, tuple) else ""
+        if host not in ("127.0.0.1", "localhost", "::1") and (not ip or ip in ("0.0.0.0", "::")):
+            try:
+                self.bind((src, 0))
+            except OSError:
+                pass
+        return _orig_connect(self, address)
+    socket.socket.connect = connect
+PY
+                            export PYTHONPATH="\$COS_DIRECT_DIR\${PYTHONPATH:+:\$PYTHONPATH}"
+                            export COS_BIND_ADDR="\$BIND_ADDR"
+                            echo "COS 直连网卡 \$BIND_ADDR，不走 VPN"
+                        else
+                            echo "未找到局域网地址，COS 只关闭了 HTTP 代理"
+                        fi
                         
                         if [ -f "${JENKINS_SECRETS_FILE}" ]; then
                             set -a

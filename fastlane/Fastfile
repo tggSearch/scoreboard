@@ -21,7 +21,7 @@ platform :ios do
       readonly: readonly,
       shallow_clone: true,
       clone_branch_directly: readonly,
-      force: true,
+      force: options.fetch(:force, false).to_s == "true",
       skip_confirmation: true,
       skip_set_partition_list: true,
       api_key: lane_context[SharedValues::APP_STORE_CONNECT_API_KEY]

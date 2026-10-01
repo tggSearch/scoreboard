@@ -60,13 +60,9 @@ export FASTLANE_SKIP_CONFIRMATIONS=1
 export FASTLANE_HIDE_CHANGELOG=1
 export CI="${CI:-true}"
 
-# Optional proxy (Jenkins nodes often need it for Apple / GitHub)
-if [ -z "${HTTP_PROXY:-}${http_proxy:-}" ]; then
-  export HTTP_PROXY="${HTTP_PROXY:-http://127.0.0.1:7897}"
-  export HTTPS_PROXY="${HTTPS_PROXY:-http://127.0.0.1:7897}"
-  export http_proxy="${http_proxy:-$HTTP_PROXY}"
-  export https_proxy="${https_proxy:-$HTTPS_PROXY}"
-fi
+# 不要把 Apple 的 WWDR 下载送进 127.0.0.1:7897。该端口 TLS 会断开，
+# match 就会报 Could not install WWDR certificate。走系统 VPN 即可。
+unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy
 
 sync_export_options() {
   local profile_name="$1"

@@ -942,6 +942,36 @@ check_and_install_cos_deps() {
 
 configure_coscmd() {
     log_info "配置腾讯云 COS..."
+    unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy
+    unset SOCKS_PROXY SOCKS5_PROXY socks_proxy socks5_proxy
+    export NO_PROXY="localhost,127.0.0.1,.myqcloud.com,.tencentcos.cn"
+    export no_proxy="$NO_PROXY"
+    BIND_ADDR=$(ipconfig getifaddr en1 2>/dev/null || ipconfig getifaddr en0 2>/dev/null || true)
+    if [ -n "$BIND_ADDR" ]; then
+        COS_DIRECT_DIR=$(mktemp -d)
+        cat > "$COS_DIRECT_DIR/sitecustomize.py" << 'PY'
+import os, socket
+src = os.environ.get("COS_BIND_ADDR", "")
+if src:
+    _orig_connect = socket.socket.connect
+    def connect(self, address):
+        try:
+            ip, port = self.getsockname()[:2]
+        except OSError:
+            ip, port = "", 0
+        host = address[0] if isinstance(address, tuple) else ""
+        if host not in ("127.0.0.1", "localhost", "::1") and (not ip or ip in ("0.0.0.0", "::")):
+            try:
+                self.bind((src, 0))
+            except OSError:
+                pass
+        return _orig_connect(self, address)
+    socket.socket.connect = connect
+PY
+        export PYTHONPATH="$COS_DIRECT_DIR${PYTHONPATH:+:$PYTHONPATH}"
+        export COS_BIND_ADDR="$BIND_ADDR"
+        log_info "COS 直连网卡 $BIND_ADDR，不走 VPN"
+    fi
     
     # 配置 coscmd
     coscmd config \
@@ -1019,17 +1049,13 @@ check_and_install_google_play_deps() {
 }
 
 setup_google_play_proxy() {
-    # Clash mixed 端口：与 curl --proxy http://127.0.0.1:7897 保持一致
-    local host="${CLASH_PROXY_HOST:-127.0.0.1}"
-    local port="${CLASH_PROXY_PORT:-7897}"
-    export HTTP_PROXY="http://${host}:${port}"
-    export HTTPS_PROXY="http://${host}:${port}"
-    export http_proxy="$HTTP_PROXY"
-    export https_proxy="$HTTPS_PROXY"
-    # 避免 ALL_PROXY(socks5) 与 HTTP 代理混用导致 requests SSL 异常
-    unset ALL_PROXY all_proxy
-    log_info "Google Play 代理: $HTTPS_PROXY"
+    # Google 必须走 VPN。当前 VPN 是系统 TUN（Tigerleap / utun），
+    # 不要再强制 127.0.0.1:7897：该 HTTP 代理端口已失效，TLS 会直接断开。
+    unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
+    unset ALL_PROXY all_proxy SOCKS_PROXY SOCKS5_PROXY socks_proxy socks5_proxy
+    log_info "Google Play 走系统 VPN（不使用 127.0.0.1:7897）"
 }
+
 
 upload_aab_to_google_play() {
     log_step "上传 AAB 到 Google Play Store"
@@ -1204,9 +1230,9 @@ def upload_aab(service_account_file, package_name, aab_file, track):
     proxies = get_proxy_config()
     if proxies:
         session.proxies.update(proxies)
-        print(f"使用代理: {proxies['https']}")
+        print(f"使用 HTTP 代理: {proxies['https']}")
     else:
-        print("警告: 未检测到代理设置")
+        print("使用系统 VPN（默认路由，不经过 127.0.0.1:7897）")
 
     test_api_connectivity(session)
 
