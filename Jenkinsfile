@@ -145,21 +145,12 @@ pipeline {
                         echo "$PATH"
                         echo ""
                         
-                        echo "--- 代理检查 ---"
-                        echo "HTTP_PROXY: $HTTP_PROXY"
-                        echo "HTTPS_PROXY: $HTTPS_PROXY"
-                        echo ""
-                        echo "测试代理连接..."
-                        if curl -I --proxy $HTTP_PROXY --connect-timeout 5 https://www.google.com 2>/dev/null | head -1; then
-                            echo "✓ 代理连接成功"
+                        echo "--- 网络检查（系统 VPN，不强制 7897）---"
+                        unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy
+                        if curl -I --connect-timeout 5 https://www.google.com 2>/dev/null | head -1; then
+                            echo "✓ Google 可达（系统 VPN）"
                         else
-                            echo "✗ 警告: 代理连接失败，可能影响 pub.dev 访问"
-                            echo "尝试直接连接 pub.dev (不使用代理)..."
-                            if curl -I --connect-timeout 5 https://pub.dev 2>/dev/null | head -1; then
-                                echo "✓ 可以直接访问 pub.dev"
-                            else
-                                echo "✗ 无法访问 pub.dev，构建可能失败"
-                            fi
+                            echo "⚠ Google 不可达，确认 VPN 已连接"
                         fi
                         echo ""
                         
