@@ -63,6 +63,45 @@ export CI="${CI:-true}"
 # 不要把 Apple 的 WWDR 下载送进 127.0.0.1:7897。该端口 TLS 会断开，
 # match 就会报 Could not install WWDR certificate。走系统 VPN 即可。
 unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy
+unset SOCKS_PROXY SOCKS5_PROXY socks_proxy socks5_proxy
+export NO_PROXY="*"
+export no_proxy="*"
+# fastlane 下载 WWDR 时启用 HTTP/1.1 + 重试；我们再预装一遍，避免 CI 偶发 curl 失败。
+export FASTLANE_WWDR_USE_HTTP1_AND_RETRIES=1
+
+ensure_wwdr_certificates() {
+  local keychain="${HOME}/Library/Keychains/login.keychain-db"
+  [ -f "$keychain" ] || keychain="${HOME}/Library/Keychains/login.keychain"
+  local tmp
+  tmp="$(mktemp -d)"
+  local urls=(
+    "https://www.apple.com/certificateauthority/AppleWWDRCAG2.cer"
+    "https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer"
+    "https://www.apple.com/certificateauthority/AppleWWDRCAG4.cer"
+    "https://www.apple.com/certificateauthority/AppleWWDRCAG5.cer"
+    "https://www.apple.com/certificateauthority/AppleWWDRCAG6.cer"
+    "https://www.apple.com/certificateauthority/DeveloperIDCA.cer"
+    "https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer"
+  )
+  local url file out
+  for url in "${urls[@]}"; do
+    file="${tmp}/$(basename "$url")"
+    if ! curl --noproxy '*' --http1.1 --retry 3 --retry-all-errors -fsSL -o "$file" "$url"; then
+      log "WWDR 预下载失败: $url"
+      continue
+    fi
+    out="$(security import "$file" -k "$keychain" 2>&1 || true)"
+    if [[ "$out" == *"already exists"* ]] || [[ -z "$out" ]]; then
+      :
+    else
+      log "WWDR import: $out"
+    fi
+  done
+  rm -rf "$tmp"
+  log "WWDR 中间证书已预装到 login keychain"
+}
+
+ensure_wwdr_certificates
 
 sync_export_options() {
   local profile_name="$1"
