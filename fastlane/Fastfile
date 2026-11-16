@@ -1,21 +1,24 @@
 # frozen_string_literal: true
 default_platform(:ios)
+
 platform :ios do
-  before_all do
-    ENV["MATCH_PASSWORD"] = ENV.fetch("MATCH_PASSWORD", "match")
-    ENV["FASTLANE_SKIP_CONFIRMATIONS"] = "1"
-    app_store_connect_api_key(
-      key_id: ENV.fetch("IOS_API_KEY_ID", "RM9A47XN3A"),
-      issuer_id: ENV.fetch("IOS_API_ISSUER_ID", "aabd36b8-9b8f-44ed-a8db-5afff7624ad6"),
-      key_filepath: ENV.fetch("IOS_API_KEY_PATH", "/Users/dan/Documents/cert/RM9A47XN3A.p8"),
+  lane :sync_certificates do |options|
+    readonly = options.fetch(:readonly, true)
+    readonly = true if readonly.to_s == "true"
+    readonly = false if readonly.to_s == "false"
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("IOS_API_KEY_ID"),
+      issuer_id: ENV.fetch("IOS_API_ISSUER_ID"),
+      key_filepath: ENV.fetch("IOS_API_KEY_PATH"),
       duration: 1200,
       in_house: false
     )
-  end
-  lane :sync_certificates do |options|
-    readonly = options.fetch(:readonly, false)
-    readonly = true if readonly.to_s == "true"
-    readonly = false if readonly.to_s == "false"
+    if ENV["JENKINS_IOS_WWDR_READY"] == "1"
+      FastlaneCore::CertChecker.define_singleton_method(:install_missing_wwdr_certificates) do |in_keychain: nil|
+        0
+      end
+    end
     match(
       type: "appstore",
       readonly: readonly,
@@ -24,7 +27,7 @@ platform :ios do
       force: options.fetch(:force, false).to_s == "true",
       skip_confirmation: true,
       skip_set_partition_list: true,
-      api_key: lane_context[SharedValues::APP_STORE_CONNECT_API_KEY]
+      api_key: api_key
     )
   end
 end

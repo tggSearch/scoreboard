@@ -10,7 +10,7 @@
 		<string>match AppStore com.qualrb.scoreBoardPro</string>
 	</dict>
 	<key>signingCertificate</key>
-	<string>iPhone Distribution</string>
+	<string>F13D5DB806C22A5C00B8AA12893001E2FBCF51F3</string>
 	<key>signingStyle</key>
 	<string>manual</string>
 	<key>teamID</key>
